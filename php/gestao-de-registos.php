@@ -7,7 +7,10 @@ if (checkCapability("manage_subitems")) {
         die("Connection to DB failed: " . mysqli_connect_error());
     } else {
         if (array_key_exists('estado', get_defined_vars()) && $_REQUEST["estado"] == "inserir") {
-
+            $date= date_create_from_format("YYYY-MM_DD",$_REQUEST["childBday"]);
+            if(empty($_REQUEST["childBday"]) || $date->format("YYYY-MM_DD")){
+                echo 1;
+            }
         } else {//estado inicial
             $queryChild = "SELECT id, name, birth_date, tutor_name, tutor_phone, tutor_email FROM child ORDER BY name ASC";
             $resultChild = mysqli_query($dbLink, $queryChild);
@@ -72,7 +75,22 @@ if (checkCapability("manage_subitems")) {
                     }
                     echo "<td>$info</td></tr>";
                 }
-                echo '</tbody></table></div>';
+                echo '</tbody></table></div>
+                    <body>
+                    <h3 class="sub_title"><b>Gestão de Registos - introdução</b></h3>
+                    <h4>Introduza os dados pessoais básicos da criança:</h4>
+                    <form method="post" action="' . $current_page . '">
+                        <h4 class="form_input_title">Nome completo</h4>
+                        <input type="text" id="childName" name="childName"><br>
+                        <h4 class="form_input_title">Data de nascimento</h4>
+                        <input type="text" id="childBday" name="childBday" placeholder="AAAA-MM-DD">
+                        <h4 class="form_input_title">Nome completo do encarregado de educação</h4>
+                        <input type="text" id="tutorName" name="tutorName">
+                        <h4 class="form_input_title">Telefone do encarregado de educação</h4>
+                        <input type="text" id="tutorPhone" name="tutorPhone" placeholder="123456789"><!--o utilizador tem que indicar sempre, simplesmente um número de 9 algarismos com o indicativo incluído e não é para ter em conta indicativos, se é regional, nacional, fixo, móvel etc-->
+                        <h4 class="form_input_title">Endereço de e-mail do tutor</h4>
+                        <input>';
+
                 //campos de Introduçao de valores
             } else {
                 echo "<div class='unsuccess warnings'>
