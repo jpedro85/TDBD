@@ -48,4 +48,11 @@ function get_enum_values($connection, $table, $column)
     return ($enum_fields);
 }
 
+function validateDate($date, $format = 'Y-m-d')
+{
+    $dateFromat = DateTime::createFromFormat($format, $date);
+    //o Y (4 digitos) devolve TRUE para qualquer inteiro por isso usando === vai verificar se sao so de mesmo tipo dando fix no problema
+    return $dateFromat && $dateFromat->format($format) === $date;
+}
+
 ?>
