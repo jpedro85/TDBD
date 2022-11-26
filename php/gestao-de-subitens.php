@@ -7,12 +7,12 @@ if (checkCapability("manage_subitems")) {
     if (!mysqli_select_db($dbLink, "bitnami_wordpress")) {
         die("Connection to DB failed: " . mysqli_connect_error());
     } else {
-        if (array_key_exists('estado', get_defined_vars()) && $_REQUEST["estado"] == "inserir") {
+        if (array_key_exists("estado", $_REQUEST) &&$_REQUEST["estado"] == "inserir") {
             $requiredFilled = true;
             $fields = "";
             echo '<h3 class="main_title"><b>Gestão de subitens - inserção</b></h3>';
             echo '<div>';
-            if (empty($_POST["subName"])) {
+            if (empty($_POST["subName"]) || is_numeric($_REQUEST["subName"])) {
                 $fields .= "<li class = 'warning_list'><strong>Nome do subitem</strong></li>";
                 $requiredFilled = false;
             }
@@ -39,7 +39,7 @@ if (checkCapability("manage_subitems")) {
             echo '</div>';
             if (!$requiredFilled) {
                 echo '<div class="unsuccess warnings">
-                        <span> Os seguintes campos são <strong>obrigatorios:</strong></span><ul>' . $fields . '</ul>
+                        <span> Os seguintes campos são <strong>obrigatorios e percisam de ser validos:</strong></span><ul>' . $fields . '</ul>
                     </div>';
                 voltar();
             } else {//como nao houve erros procede a parte de inserçao de dados
@@ -102,7 +102,6 @@ if (checkCapability("manage_subitems")) {
                     echo "<div class='success'>
                               <p id='suc_main'>Inseriu os dados de novo subitem com sucesso.<br>
                                     Clique em <span id='suc'>Continuar</span> para avançar<br>  
-                                    <a href='$current_page' >Continuar</a>
                               </p>
                           </div>
                           <table style='text-align: center' width: 100%>
@@ -132,7 +131,8 @@ if (checkCapability("manage_subitems")) {
                                     <td>active</td>
                                 </tr>
                             </tbody>
-                          </table>";
+                          </table><br><br>
+                          <a href='$current_page' >Continuar</a>";
                 }
             }
         } else {//estado inicial
