@@ -1,6 +1,6 @@
 <?php
 require_once("custom/php/common.php");
-if (checkCapability("insert_values")) {
+if (checkCapability("insert values")) {
     if (!isset($_POST['estado'])) {
         $myDB = connect();
         echo "<p>16</p>";
