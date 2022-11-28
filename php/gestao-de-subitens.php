@@ -1,38 +1,37 @@
 <?php
 require_once("custom/php/common.php");
 
-
 $dbLink = connect();
 if (checkCapability("manage_subitems")) {
     if (!mysqli_select_db($dbLink, "bitnami_wordpress")) {
         die("Connection to DB failed: " . mysqli_connect_error());
     } else {
-        if (array_key_exists("estado", $_REQUEST) &&$_REQUEST["estado"] == "inserir") {
+        if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "inserir" && !$_SESSION["subitemAdded"]) {
             $requiredFilled = true;
             $fields = "";
             echo '<h3 class="main_title"><b>Gestão de subitens - inserção</b></h3>';
             echo '<div>';
-            if (empty($_POST["subName"]) || is_numeric($_REQUEST["subName"])) {
+            if (empty($_REQUEST["subName"]) || is_numeric($_REQUEST["subName"])) {
                 $fields .= "<li class = 'warning_list'><strong>Nome do subitem</strong></li>";
                 $requiredFilled = false;
             }
-            if (empty($_POST["subType"])) {
+            if (empty($_REQUEST["subType"])) {
                 $fields .= "<li class = 'warning_list'><strong>Tipo do valor</strong></li>";
                 $requiredFilled = false;
             }
-            if ($_POST["ItemName"] === "Selecione Um item") {
+            if ($_REQUEST["ItemName"] === "Selecione Um item") {
                 $fields .= "<li class = 'warning_list'><strong>Item</strong></li>";
                 $requiredFilled = false;
             }
-            if (empty($_POST["formType"])) {
+            if (empty($_REQUEST["formType"])) {
                 $fields .= "<li class = 'warning_list'><strong>Tipo do campo no formulario</strong></li>";
                 $requiredFilled = false;
             }
-            if (empty($_POST["formOrder"]) || !is_numeric($_POST["formOrder"]) || $_POST["formOrder"] < 0) {
+            if (empty($_REQUEST["formOrder"]) || !is_numeric($_REQUEST["formOrder"]) || $_REQUEST["formOrder"] < 0) {
                 $fields .= "<li class = 'warning_list'><strong>Ordem do campo no formulario</strong></li>";
                 $requiredFilled = false;
             }
-            if (empty($_POST["mandatory"])) {
+            if (empty($_REQUEST["mandatory"])) {
                 $fields .= "<li class = 'warning_list'><strong>Obrigatório</strong></li>";
                 $requiredFilled = false;
             }
@@ -43,21 +42,21 @@ if (checkCapability("manage_subitems")) {
                     </div>';
                 voltar();
             } else {//como nao houve erros procede a parte de inserçao de dados
-                $itemName = str_replace("_", " ", $_POST["ItemName"]);
-                $subitemName = trim($_POST["subName"]);
-                $subitemName = stripslashes($_POST["subName"]);
-                $subitemName = htmlspecialchars($_POST["subName"]);
-                $subitemName = str_replace("_", " ", $_POST["subName"]);
-                $subType = $_POST["subType"];
-                $formType = $_POST["formType"];
-                $subUnitType = str_replace("_", " ", $_POST["subUnitType"]);
-                $formOrder = trim($_POST["formOrder"]);
-                $mandatory = $_POST["mandatory"];
+                $itemName = str_replace("_", " ", $_REQUEST["ItemName"]);
+                $subitemName = trim($_REQUEST["subName"]);
+                $subitemName = stripslashes($_REQUEST["subName"]);
+                $subitemName = htmlspecialchars($_REQUEST["subName"]);
+                $subitemName = str_replace("_", " ", $_REQUEST["subName"]);
+                $subType = $_REQUEST["subType"];
+                $formType = $_REQUEST["formType"];
+                $subUnitType = str_replace("_", " ", $_REQUEST["subUnitType"]);
+                $formOrder = trim($_REQUEST["formOrder"]);
+                $mandatory = $_REQUEST["mandatory"];
 
                 $queryIdItem = "SELECT id FROM item WHERE name='$itemName'";
                 $resultInsert = mysqli_query($dbLink, $queryIdItem);
                 $fetchedItem = mysqli_fetch_assoc($resultInsert);
-                $queryIdSubUnit = "SELECT id FROM subitem_unit_type WHERE name='$subUnitType'";
+                $queryIdSubUnit = "SELECT id,name FROM subitem_unit_type WHERE name='$subUnitType'";
                 $resultInsert = mysqli_query($dbLink, $queryIdSubUnit);
                 $fetchedUnit = mysqli_fetch_assoc($resultInsert);
 
@@ -133,8 +132,12 @@ if (checkCapability("manage_subitems")) {
                             </tbody>
                           </table><br><br>
                           <a href='$current_page' >Continuar</a>";
+                    $_SESSION["subitemAdded"] = true;
                 }
             }
+        } elseif ($_SESSION["subitemAdded"]) {
+            echo "<div class='unsuccess warnings'><ul id='obg_main'><span>Erro: Este subitem já foi criado e inserido na Base de Dados</span></ul></div>
+                   <a href='$current_page' ><button class='continueButton'>Continuar</button></a>";
         } else {//estado inicial
             echo '<table class="tabela" style="text-align: center; width: 100%;">
                     <tbody>
@@ -213,6 +216,7 @@ if (checkCapability("manage_subitems")) {
                         <h4 class="form_input_title">Nome do subitem</h4>
                         <input type="text" id="subName" name="subName"><br>
                         <h4 class="form_input_title">Tipo de valor</h4>';
+            $_SESSION["subitemAdded"] = false;
             $valType = get_enum_values($dbLink, "subitem", "value_type");
             $checked = true;
             foreach ($valType as $type) {//radio buttons do tipo de valor --subType--
