@@ -36,7 +36,7 @@ if (checkCapability("manage_subitems")) {
                 echo '<div class="unsuccess warnings">
                         <span> Os seguintes campos são <strong>obrigatorios e percisam de ser válidos:</strong></span><ul>' . $fields . '</ul>
                     </div>';
-                voltar();
+                voltar_atras();
             } else {//se nao ocorreu erros na introduçao de dados validar dados
                 echo "<div class='success'>
                         <span id='suc_main'>Estamos prestes a inserir os dados abaixo na base de dados. Confirma que os dados estão correctos e pretende submeter os mesmos?</span>";

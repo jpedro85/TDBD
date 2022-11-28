@@ -13,7 +13,7 @@ function connect() {
     $link = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
     if ($link->connect_error) {
         die('Connection failed: ' . $link->connect_error);
-        echo "Not Connected\n";
+        echo "Connected successfully<br>";
     }
 
     return $link;
@@ -62,6 +62,12 @@ function switchBackground($background)
     return $background;
 }
 
+function validateDate($date, $format = 'Y-m-d')
+{
+    $dateFromat = DateTime::createFromFormat($format, $date);
+    //o Y (4 digitos) devolve TRUE para qualquer inteiro por isso usando === vai verificar se sao so de mesmo tipo dando fix no problema
+    return $dateFromat && $dateFromat->format($format) === $date;
+}
 ?>
 
 
