@@ -147,9 +147,8 @@ td {
     border: 1px !important;
     border-color: rgb(6, 2, 63);
     color: white !important;
-    padding: 8px 20px !important;
+    padding: 0.7em 1.2em !important;
     text-decoration: none !important;
-    margin: 4px 2px !important;
+    margin: 1em 1.5em !important;
     cursor: pointer !important;
-    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }

@@ -1,12 +1,12 @@
 <?php
 require_once("custom/php/common.php");
-
+$inserted = false;
 $dbLink = connect();
 if (checkCapability("manage_subitems")) {
     if (!mysqli_select_db($dbLink, "bitnami_wordpress")) {
         die("Connection to DB failed: " . mysqli_connect_error());
     } else {
-        if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "validar") {
+        if (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "validar" && !$_SESSION["childAdded"]) {
             $actualDate = date("Y-m-d");
             $requiredFilled = true;
             $fields = "";
@@ -45,27 +45,30 @@ if (checkCapability("manage_subitems")) {
                       <li class='warnings'><span id='suc'>Data de nascimento da criança: </span>" . $_REQUEST["childBday"] . "</li>
                       <li class='warnings'><span id='suc'>Nome completo do encarregado de educação: </span>" . $_REQUEST["tutorName"] . "</li>
                       <li class='warnings'><span id='suc'>Telefone do Encarregado de Educação: </span>" . $_REQUEST["tutorPhone"] . "</li>
-                      <li class='warnings'><span id='suc'>Endereço de e-mail do Encarregado de educação: </span>" . ($_REQUEST["tutorEmail"]== null ? " NULL" : $_REQUEST["tutorEmail"]) . "</li>
+                      <li class='warnings'><span id='suc'>Endereço de e-mail do Encarregado de educação: </span>" . ($_REQUEST["tutorEmail"] == null ? " NULL" : $_REQUEST["tutorEmail"]) . "</li>
                       </div>";
                 echo "<form method='post' action='$current_page'>
-                        <input type='hidden' name='childName' value=".$_REQUEST["childName"].">
-                        <input type='hidden' name='childBday' value=".$_REQUEST["childBday"].">
-                        <input type='hidden' name='tutorName' value=".$_REQUEST["tutorName"].">
-                        <input type='hidden' name='tutorPhone' value=".$_REQUEST["tutorPhone"].">
-                        <input type='hidden' name='tutorEmail' value=".$_REQUEST["tutorEmail"].">
+                        <input type='hidden' name='childName' value=" . $_REQUEST["childName"] . ">
+                        <input type='hidden' name='childBday' value=" . $_REQUEST["childBday"] . ">
+                        <input type='hidden' name='tutorName' value=" . $_REQUEST["tutorName"] . ">
+                        <input type='hidden' name='tutorPhone' value=" . $_REQUEST["tutorPhone"] . ">
+                        <input type='hidden' name='tutorEmail' value=" . $_REQUEST["tutorEmail"] . ">
                         <input type='hidden' name='estado' value='inserir'><br>
                         <input type='submit' value='Submeter'>
                       </form>";
             }
-        }elseif (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "inserir"){
+        } elseif (array_key_exists("estado", $_REQUEST) && $_REQUEST["estado"] == "inserir") {
             echo "<h3 class='sub_title'>Dados de registo - inserção</h3>";
-            $queryChildInsert="INSERT INTO child(id, name, birth_date, tutor_name, tutor_phone, tutor_email) VALUES (NULL,'".$_REQUEST["childName"]."','".$_REQUEST["childBday"]."','".$_REQUEST["tutorName"]."','".$_REQUEST["tutorPhone"]."','".$_REQUEST["tutorEmail"]."')";
-            if (!mysqli_query($dbLink,$queryChildInsert)){
+            $queryChildInsert = "INSERT INTO child(id, name, birth_date, tutor_name, tutor_phone, tutor_email) VALUES (NULL,'" . $_REQUEST["childName"] . "','" . $_REQUEST["childBday"] . "','" . $_REQUEST["tutorName"] . "','" . $_REQUEST["tutorPhone"] . "','" . $_REQUEST["tutorEmail"] . "')";
+            if (!mysqli_query($dbLink, $queryChildInsert)) {
                 echo '<div class="unsuccess warnings"><span>Error: ' . $queryChildInsert . "<br>" . mysqli_error($dbLink) . '</span>';
-            }else{//Senao houver erros a executar a querry os dados sao inseridos e aparece o butao continuar
+            } else {//Senao houver erros a executar a querry os dados sao inseridos e aparece o butao continuar
                 echo "<div class='success'><p id='suc_main'>Inseriu os dados de registo com sucesso.<br>Clique em <span id='suc'>Continuar</span> para avançar.</p></div>
                       <a href='$current_page' ><button class='continueButton'>Continuar</button></a>";
             }
+        } elseif ($_SESSION["childAdded"]) {
+            echo "<div class='unsuccess warnings'><ul id='obg_main'><span>Erro: Este subitem já foi criado e inserido na Base de Dados</span></ul></div>
+                   <a href='$current_page' ><button class='continueButton'>Continuar</button></a>";
         } else {//estado inicial
             $queryChild = "SELECT id, name, birth_date, tutor_name, tutor_phone, tutor_email FROM child ORDER BY name ASC";
             $resultChild = mysqli_query($dbLink, $queryChild);
@@ -149,7 +152,7 @@ if (checkCapability("manage_subitems")) {
                         <input type="text" id="tutorEmail" name="tutorEmail"><br>
                         <input type="hidden" name="estado" value="validar"><br>
                         <input type="submit" value="Submeter">';
-
+                $_SESSION["childAdded"] = false;
             } else {
                 echo "<div class='unsuccess warnings'>
                         <span><b>Não há crianças</b></span>
