@@ -13,7 +13,6 @@ function connect() {
     $link = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
     if ($link->connect_error) {
         die('Connection failed: ' . $link->connect_error);
-        echo "Connected successfully<br>";
     }
 
     return $link;
