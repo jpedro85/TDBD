@@ -1,6 +1,6 @@
 <?php
 require_once("custom/php/common.php");
-if (checkCapability("manage")) {
+if (checkCapability("manage_unit_types")) {
     if (!isset($_POST['estado'])) {
         $myDB = connect();
         $query = "SELECT id,name FROM subitem_unit_type ORDER BY name ASC";
@@ -79,7 +79,7 @@ if (checkCapability("manage")) {
 } else {
     echo "<br>
           <div class='unsuccess'>
-          <p id='obg_main'>Não tem<span id='obg'> autorização </span>para aceder á página<span id='obg'> Gestão de items </span></p>
+          <p id='obg_main'>Não tem<span id='obg'> autorização </span>para aceder á página<span id='obg'> Gestão de unidades </span></p>
           </div>";
 }
 ?>

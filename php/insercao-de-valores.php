@@ -1,6 +1,6 @@
 <?php
 require_once("custom/php/common.php");
-if (checkCapability("manage")) {
+if (checkCapability(" insert_values")) {
     if (!isset($_POST['estado'])) {
         $myDB = connect();
         echo "<p>16</p>";
@@ -58,7 +58,7 @@ if (checkCapability("manage")) {
 } else {
     echo "<br>
           <div class='unsuccess'>
-          <p id='obg_main'>Não tem<span id='obg'> autorização </span>para aceder á página<span id='obg'> Gestão de items </span></p>
+          <p id='obg_main'>Não tem<span id='obg'> autorização </span>para aceder á página<span id='obg'> Inserção de valores </span></p>
           </div>";
 }
 ?>
