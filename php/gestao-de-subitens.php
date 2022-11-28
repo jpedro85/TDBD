@@ -40,7 +40,7 @@ if (checkCapability("manage_subitems")) {
                 echo '<div class="unsuccess warnings">
                         <span> Os seguintes campos são <strong>obrigatorios e percisam de ser validos:</strong></span><ul>' . $fields . '</ul>
                     </div>';
-                voltar();
+                voltar_atras();
             } else {//como nao houve erros procede a parte de inserçao de dados
                 $itemName = str_replace("_", " ", $_REQUEST["ItemName"]);
                 $subitemName = trim($_REQUEST["subName"]);
