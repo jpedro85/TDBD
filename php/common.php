@@ -19,9 +19,9 @@ function connect() {
 }
 
 function voltar_atras(){
-    echo "<script type='text/javascript'>document.write(\"<a href='javascript:history.back()' class='backLink' title='Voltar atr&aacute;s'>Voltar atr&aacute;s</a>\");</script>
+    echo "<script type='text/javascript'>document.write(\"<a href='javascript:history.back()'> <button class='continueButton' >Voltar AtrÃ¡s</button> </a>\");</script>
     <noscript>
-    <a href='" . $_SERVER['HTTP_REFERER'] . "‘ class='backLink' title='Voltar atr&aacute;s'>Voltar atr&aacute;s</a>
+    <a href='" . $_SERVER['HTTP_REFERER'] . "</a>
     </noscript>";
 
 }
