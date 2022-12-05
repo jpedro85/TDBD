@@ -27,7 +27,7 @@ if (checkCapability("manage_subitems")) {
                 $fields .= "<li class = 'warning_list'><strong>Tipo do campo no formulario</strong></li>";
                 $requiredFilled = false;
             }
-            if (empty($_REQUEST["formOrder"]) || !is_numeric($_REQUEST["formOrder"]) || $_REQUEST["formOrder"] < 0) {
+            if (empty($_REQUEST["formOrder"]) || !filter_var($_REQUEST["formOrder"], FILTER_VALIDATE_INT) || $_REQUEST["formOrder"] < 0) {
                 $fields .= "<li class = 'warning_list'><strong>Ordem do campo no formulario</strong></li>";
                 $requiredFilled = false;
             }
@@ -88,6 +88,7 @@ if (checkCapability("manage_subitems")) {
                 echo '</div>';
                 if (!$queryErrors) {
                     $transaction = "COMMIT;";
+                    $_SESSION["subitemAdded"] = true;
                     if (!mysqli_query($dbLink, $transaction)) {
                         $queryErrors = true;
                     }
@@ -98,7 +99,8 @@ if (checkCapability("manage_subitems")) {
                     }
                 }
                 if (!$queryErrors) {//senao ocorreu erros ate agora mostrar pagina final
-                    echo "<div class='success'>
+                    if (!$_SESSION["childAdded"]) {
+                        echo "<div class='success'>
                               <p id='suc_main'>Inseriu os dados de novo subitem com sucesso.<br>
                                     Clique em <span id='suc'>Continuar</span> para avançar<br>  
                               </p>
@@ -132,12 +134,13 @@ if (checkCapability("manage_subitems")) {
                             </tbody>
                           </table><br><br>
                           <a href='$current_page' >Continuar</a>";
-                    $_SESSION["subitemAdded"] = true;
+                        $_SESSION["subitemAdded"] = true;
+                    } else {
+                        echo "<div class='unsuccess warnings'><p id='obg_main'><span id='obg'>Erro:</span> Este subitem já foi criado e <span id='obg'>inserido na Base de Dados</span></p></div>
+                              <a href='$current_page' ><button class='continueButton'>Continuar</button></a>";
+                    }
                 }
             }
-        } elseif ($_SESSION["subitemAdded"]) {
-            echo "<div class='unsuccess warnings'><ul id='obg_main'><span>Erro: Este subitem já foi criado e inserido na Base de Dados</span></ul></div>
-                   <a href='$current_page' ><button class='continueButton'>Continuar</button></a>";
         } else {//estado inicial
             echo '<table class="tabela" style="text-align: center; width: 100%;">
                     <tbody>
@@ -159,7 +162,7 @@ if (checkCapability("manage_subitems")) {
             $bckgType = "row2";
             $bckgType2 = 'row2';
             while ($rowItem = mysqli_fetch_assoc($resultItem)) {
-                $querySubitem = "SELECT id,name,value_type,form_field_name,form_field_type,unit_type_id,form_field_order, mandatory, state FROM subitem WHERE item_id=" . $rowItem["id"] . " ORDER BY form_field_order";//buscar os subtiens relacionados ao item atual
+                $querySubitem = "SELECT id,name,value_type,form_field_name,form_field_type,unit_type_id,form_field_order, mandatory, state FROM subitem WHERE item_id=" . $rowItem["id"] . " ORDER BY name ASC";//buscar os subtiens relacionados ao item atual
                 $resultSubitem = mysqli_query($dbLink, $querySubitem);//a tabela com da querry com os dados relacionados tendo um certo numero de linhas que vai quantas rows este item vai ter
                 $numRowsSubItem = mysqli_num_rows($resultSubitem);//quantidade de linhas que a tabela tem
                 $bckgType = switchBackground($bckgType);
@@ -216,16 +219,15 @@ if (checkCapability("manage_subitems")) {
                         <h4 class="form_input_title">Nome do subitem</h4>
                         <input type="text" id="subName" name="subName"><br>
                         <h4 class="form_input_title">Tipo de valor</h4>';
-            $_SESSION["subitemAdded"] = false;
             $valType = get_enum_values($dbLink, "subitem", "value_type");
             $checked = true;
             foreach ($valType as $type) {//radio buttons do tipo de valor --subType--
-                $input = '<input';
+                $input = '<li><input';
                 if ($checked) {
                     $input .= ' checked';
                     $checked = false;
                 }
-                $input .= ' type="radio" name="subType" value="' . $type . '"><label>' . $type . '</label><br>';
+                $input .= ' type="radio" name="subType" value="' . $type . '"><label>' . $type . '</label></li>';
                 echo $input;
             }
             echo '<h4 class="form_input_title">Selecione Um Item</h4>';//Selectbox do Item --Itemname--
@@ -245,12 +247,12 @@ if (checkCapability("manage_subitems")) {
             echo '<h4 class="form_input_title">Tipo do campo no formulario</h4>';
             $checked = true;
             foreach ($formFieldType as $formTypes) {
-                $input = '<input';
+                $input = '<li><input';
                 if ($checked) {
                     $input .= ' checked';
                     $checked = false;
                 }
-                $input .= ' type="radio" name="formType" value="' . $formTypes . '"><label>' . $formTypes . '</label><br>';
+                $input .= ' type="radio" name="formType" value="' . $formTypes . '"><label>' . $formTypes . '</label></li>';
                 echo $input;
             }
             echo '<h4 class="form_input_title">Tipo de Undidade</h4>';//selectbox - Tipo de unidade --subUnitType--
@@ -277,6 +279,7 @@ if (checkCapability("manage_subitems")) {
             <input type="submit" value="Inserir Subitem">
         </form>
       </body>';
+            $_SESSION["subitemAdded"] = false;
         }
     }
 } else {
