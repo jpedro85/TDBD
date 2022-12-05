@@ -95,6 +95,8 @@
     margin-top: 4em;
 }
 
+
+
 .warning_list {
 
     color: #a40101;
@@ -105,8 +107,7 @@
 #obg_main {
 
     font-size: 20px;
-    padding-top: 10px;
-    padding-left: 30px;
+    padding: 0.2em 0em 0.2em 1.5em;
 }
 
 #obg {
@@ -117,9 +118,7 @@
 #suc_main {
     color: #197500;
     font-size: 20px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-left: 20px;
+    padding: 0.2em 0em 0.2em 1.5em;
 }
 
 #suc {
@@ -143,6 +142,7 @@ td {
 }
 
 .continueButton {
+    border-radius: 20px;
     background-color: #06688f !important;
     border: 1px !important;
     border-color: rgb(6, 2, 63);
