@@ -6,7 +6,7 @@
  * ligação wordpress à BD.
  */
 Global $mysqli;
-$mysqli= connect();
+$dblink= connect();
 //mysqli_autocommit(false);
 
 global $current_page;
