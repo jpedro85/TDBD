@@ -3,13 +3,12 @@
 require_once("custom/php/common.php");
 //echo "138 <br>";
 //links
-//verificação cliente side
 //transactions
 if( checkCapability("manage_allowed_values") ) {
 
     if (!isset($_REQUEST["estado"])) {
 
-        $mysqli = connect();
+        //$mysqli = connect();
         $rowType = "row2";
         $rowType2 = "row2";
         $rowType3 = "row2";
@@ -150,7 +149,7 @@ if( checkCapability("manage_allowed_values") ) {
 
         if( isset($_REQUEST["nome"]) && $_REQUEST["nome"]!="" && !$_SESSION["SubAllowedValue_added"] )
         {
-            $mysqli = connect();
+            //$mysqli = connect();
             $wuery_inert = 'INSERT INTO subitem_allowed_value(subitem_id,value,state) VALUES ('.$_SESSION["subitem_id"].',"'.$_REQUEST["nome"].'","active")';
 
             if (mysqli_query($mysqli, $wuery_inert)) {
@@ -203,7 +202,7 @@ if( checkCapability("manage_allowed_values") ) {
                 echo "<div class='unsuccess' > 
                     <p id='obg_main' > O campo seguinte é <span id='obg'> Obrigatório: </span>  </p>
                     <ul>
-                        <li class='warnig_list'>Nome</li>
+                        <li class='warning_list'>Nome</li>
                         <br>
                     </ul>
                     </div>";

@@ -1,13 +1,14 @@
 <?php
 require_once("custom/php/common.php");
 //gestao de itens
-//echo "184 <br>";
+//echo "185 <br>";
 //check de capabilitie
+
 if( checkCapability("manage_items") ) {
 
     if (!isset($_REQUEST["estado"])) {
 
-        $mysqli = connect();
+       // $mysqli = connect();
         $result_item_type = mysqli_query($mysqli, "SELECT item_type.* FROM item_type");
         //variaveis para as cores das linhas da tablela
         $type = 'row2';
@@ -52,13 +53,24 @@ if( checkCapability("manage_items") ) {
 
                             switch ($row2["state"]) {
                                 case "active":
-                                    echo "<td class=$type2>[Editar]  [Desativar]  [Apagar]</td>";
+                                    echo"<td class=$type2>
+                                            <a href=".$edicao_de_dados_page.'?estado=editar&tipo=item&id='.$row2["id"].">[Editar]</a>  
+                                            <a href=".$edicao_de_dados_page.'?estado=desativar&tipo=item&id='.$row2["id"].">[Desativar]</a>  
+                                            <a href=".$edicao_de_dados_page.'?estado=editar&tipo=item&id='.$row2["id"].">[Apagar]</a>  
+                                        </td>";
                                     break;
                                 case "inactive":
-                                    echo "<td class=$type2>[Editar]  [Ativar]  [Apagar]</td>";
+                                    echo "<td class=$type2>
+                                            <a href=".$edicao_de_dados_page.'?estado=editar&tipo=item&id='.$row2["id"].">[Editar]</a>  
+                                            <a href=".$edicao_de_dados_page.'?estado=ativar&tipo=item&id='.$row2["id"].">[Ativar]</a>  
+                                            <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=item&id='.$row2["id"].">[Apagar]</a>
+                                        </td>";
                                     break;
                                 default:
-                                    echo "<td class=$type2>[Editar]  [Apagar]</td>";
+                                    echo "<td class=$type2>
+                                            <a href=".$edicao_de_dados_page.'?estado=editar&tipo=item&id='.$row2["id"].">[Editar]</a>  
+                                            <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=item&id='.$row2["id"].">[Apagar]</a>
+                                        </td>";
                                     break;
                             }
                             echo "</tr>";
@@ -142,7 +154,7 @@ if( checkCapability("manage_items") ) {
 //se ja existir um submit mostra o resultado de tentar adicionar
 } else if ($_REQUEST["estado"] == 'inserir') {
 
-        $mysqli = connect();
+       // $mysqli = connect();
         echo "<h3 class='sub_title'>Gestão de itens - Inserção</h3>";
 
         //verificar o campo nome se está vazio
@@ -224,7 +236,7 @@ if( checkCapability("manage_items") ) {
                     <p id='obg_main' > O(s) campo(s) seguinte(s) é(são) <span id='obg'> Obrigatório(s): </span>  </p>
                     <ul>";
                 foreach ($list as $item) {
-                    echo "<li class='warnig_list'>$item</li>";
+                    echo "<li class='warning_list'>$item</li>";
                 }
 
                 echo"<br></ul></div>";
