@@ -5,21 +5,29 @@
  * require_once("custom/php/common.php");
  * ligação wordpress à BD.
  */
+Global $mysqli;
+$mysqli= connect();
+//mysqli_autocommit(false);
 
 global $current_page;
 $current_page = get_site_url().'/'.basename(get_permalink());
+
+Global $edicao_de_dados_page;
+$edicao_de_dados_page = get_site_url().'/edicao-de-dados';
 
 function connect() {
     $link = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
     if ($link->connect_error) {
         die('Connection failed: ' . $link->connect_error);
+        echo "Not Connected\n";
     }
 
     return $link;
 }
 
 function voltar_atras(){
-    echo "<script type='text/javascript'>document.write(\"<a href='javascript:history.back()'> <button class='continueButton' >Voltar AtrÃ¡s</button> </a>\");</script>
+
+    echo "<script type='text/javascript'>document.write(\"<a href='javascript:history.back()'> <button class='continueButton' >Voltar Atrás</button> </a>\");</script>
     <noscript>
     <a href='" . $_SERVER['HTTP_REFERER'] . "</a>
     </noscript>";
@@ -61,12 +69,6 @@ function switchBackground($background)
     return $background;
 }
 
-function validateDate($date, $format = 'Y-m-d')
-{
-    $dateFromat = DateTime::createFromFormat($format, $date);
-    //o Y (4 digitos) devolve TRUE para qualquer inteiro por isso usando === vai verificar se sao so de mesmo tipo dando fix no problema
-    return $dateFromat && $dateFromat->format($format) === $date;
-}
 ?>
 
 
