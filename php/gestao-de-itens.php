@@ -1,15 +1,16 @@
 <?php
 require_once("custom/php/common.php");
 //gestao de itens
-//echo "185 <br>";
+echo "189 <br>";
 //check de capabilitie
 
+reset_edicao_dados();
 if( checkCapability("manage_items") ) {
 
     if (!isset($_REQUEST["estado"])) {
 
        // $mysqli = connect();
-        $result_item_type = mysqli_query($mysqli, "SELECT item_type.* FROM item_type");
+        $result_item_type = mysqli_query($dbLink, "SELECT item_type.* FROM item_type");
         //variaveis para as cores das linhas da tablela
         $type = 'row2';
         $type2 = 'row2';
@@ -33,10 +34,10 @@ if( checkCapability("manage_items") ) {
                 $type = switchBackground($type);
 
                 //query para conseguir todos os items de cada tipo
-                $query = mysqli_query($mysqli, "SELECT * FROM item WHERE item.item_type_id=" . $array["id"] . " ORDER BY name");
+                $query = mysqli_query($dbLink, "SELECT * FROM item WHERE item.item_type_id=" . $array["id"] . " ORDER BY name");
 
                 //primeira coluna
-                echo "<tr><td class=$type rowspan=".mysqli_num_rows($query).">" . $array["name"] . "</td>";//col1
+                echo "<tr><td class=$type rowspan=".( mysqli_num_rows($query) == 0 ? 1: mysqli_num_rows($query)) .">" . $array["name"] . "</td>";//col1
 
                 //se existe items daquele tipo
                 if (mysqli_num_rows($query) != 0) {
@@ -75,23 +76,6 @@ if( checkCapability("manage_items") ) {
                             }
                             echo "</tr>";
 
-                       /* } else {
-
-                            switch ($row2["state"]) {
-                                case "active":
-                                    echo "<td class=$type2>[Editar] <br> [Desativar] </td>";
-                                    break;
-                                case "inactive":
-                                    echo "<td class=$type2>[Editar] <br> [Ativar] </td>";
-                                    break;
-                                default:
-                                    echo "<td class=$type2>[Editar] <br> [Apagar]</td>";
-                                    break;
-                            }
-                            echo "</tr>";
-
-                        }*/
-
                     }
 
                 } else {
@@ -104,18 +88,19 @@ if( checkCapability("manage_items") ) {
 
             //parte de inserção de evalores
             echo "<h3 class='sub_title'>Gestão de itens - introdução</h3>
+            <p class='form_input_title'>Nome do item</p>
             <form method='post' action=" . $current_page . ">
             <input type='text' placeholder='Nome' name='nome'>
-            <p class='form_input_title'>Tpo</p>";
+            <p class='form_input_title'>Tipo</p>";
 
                 //query para os obter os nomes dos tipos
-                $result_item_type = mysqli_query($mysqli, "SELECT name FROM item_type");
+                $result_item_type = mysqli_query($dbLink, "SELECT name,item_type.id FROM item_type");
                 //criar a lista de radiobuttons tipos de items
 
                 echo "<ul>";
                 while ($row = mysqli_fetch_assoc($result_item_type)) {
                     echo "<li>
-                        <input type='radio' id='radio_type_'" . $row["name"] . " name='radio_type' value=" . $row["name"] . "> 
+                        <input type='radio' id='radio_type_'" . $row["name"] . " name='radio_type' value=" . $row["id"] . "> 
                         <label for='radio_type_'" . $row["name"] . ">" . $row["name"] . "</label>
                       <br>
                       </li>";
@@ -182,15 +167,9 @@ if( checkCapability("manage_items") ) {
         //se todos preenchidos
         if ($request_text && $request_rad_state && $request_rad_type && !$_SESSION["Item_added"] ) {
 
-            //obter o id do tipo de item
-            $rad_type_id = mysqli_fetch_assoc(mysqli_query($mysqli, '(SELECT id FROM item_type WHERE item_type.name="' . $_REQUEST["radio_type"] . '")'))["id"];
-
             //Inserção
-            if (mysqli_query($mysqli, 'INSERT INTO item(name,state,item_type_id) VALUES ("' . $_REQUEST["nome"] . '","' . $_REQUEST["rad_state"] . '",' . $rad_type_id . ')')) {
-                //Inserção com Sucesso
-                //obter o id da linha adicionada caso nomes iguais oderder id desc para obeter o ultimo caso iguais
-               // $type_id = mysqli_fetch_assoc(mysqli_query($mysqli, '(Select id FROM item WHERE item.name="' . $_REQUEST["nome"] . '"ORDER BY id DESC)'))["id"];
-                //$type_id = mysqli_insert_id($mysqli);
+            if (mysqli_query($dbLink, 'INSERT INTO item(name,state,item_type_id) VALUES ("' . $_REQUEST["nome"] . '","' . $_REQUEST["rad_state"] . '",' . $_REQUEST["radio_type"] . ')')) {
+
                 //mostrar o Sucesso
                 echo "<div class='success'>
                 <p id='suc_main'> A linha seguinte foi inserida com <span id='suc'> Successo </span> á tabela <span id='suc'> Item </span> </p>  
@@ -203,9 +182,9 @@ if( checkCapability("manage_items") ) {
                         <td>Estado</td>
                     </tr> 
                     <tr class='row1'>
-                        <td>".mysqli_insert_id($mysqli)."</td>
+                        <td>".mysqli_insert_id($dbLink)."</td>
                         <td>" . $_REQUEST["nome"] . "</td>
-                        <td>$rad_type_id</td>
+                        <td>" . $_REQUEST["radio_type"] . "</td>
                         <td>" . $_REQUEST["rad_state"] . "</td>
                     </tr> 
                 </table>

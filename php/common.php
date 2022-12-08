@@ -5,8 +5,8 @@
  * require_once("custom/php/common.php");
  * ligação wordpress à BD.
  */
-Global $mysqli;
-$dblink= connect();
+Global $dbLink;
+$dbLink= connect();
 //mysqli_autocommit(false);
 
 global $current_page;
@@ -14,6 +14,12 @@ $current_page = get_site_url().'/'.basename(get_permalink());
 
 Global $edicao_de_dados_page;
 $edicao_de_dados_page = get_site_url().'/edicao-de-dados';
+
+function reset_edicao_dados(){
+    if(isset($_SESSION["dado_alterado_bool"])){
+        $_SESSION["dado_alterado_bool"]=false;
+    }
+}
 
 function connect() {
     $link = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);

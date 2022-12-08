@@ -1,10 +1,11 @@
 <?php
 require_once("custom/php/common.php");
+reset_edicao_dados();
 if (checkCapability("manage_unit_types")) {
     if (!isset($_POST['estado'])) {
-        $myDB = connect();
+        //$dbLink = connect();
         $query = "SELECT id,name FROM subitem_unit_type ORDER BY name ASC";
-        $result = mysqli_query($myDB, $query);
+        $result = mysqli_query($dbLink, $query);
         $subitem = "";
         $cor = "row2";
         echo "<p>toladinha23</p>";
@@ -23,10 +24,10 @@ if (checkCapability("manage_unit_types")) {
             echo "<td class=$cor>" . $row['id'] . '</td>';
             echo "<td class=$cor>" . $row['name'] . '</td>';
             $querysubitem = "SELECT subitem.name,subitem.item_id FROM subitem WHERE unit_type_id=" . $row["id"];
-            $resultsubitem = mysqli_query($myDB, $querysubitem);
+            $resultsubitem = mysqli_query($dbLink, $querysubitem);
             while ($rowsubitem = mysqli_fetch_assoc($resultsubitem)) {
                 $queryitem = "SELECT item.name FROM item WHERE item.id=" . $rowsubitem["item_id"];
-                $resultitem = mysqli_query($myDB, $queryitem);
+                $resultitem = mysqli_query($dbLink, $queryitem);
                 while ($rowitem = mysqli_fetch_assoc($resultitem)) {
                     $subitem .= " " . $rowsubitem["name"] . "(" . $rowitem["name"] . ")";
                 }
@@ -36,7 +37,10 @@ if (checkCapability("manage_unit_types")) {
             } else {
                 echo "<td class=$cor>" . $subitem . '</td>';
             }
-            echo "<td class=$cor>[Apagar]</td></tr>";
+            echo "<td class=$cor>
+                    <a href=".$edicao_de_dados_page.'?estado=editar&tipo=unidade&id='.$row["id"].">[Editar]</a>  
+                    <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=unidate&id='.$row["id"].">[Apagar]</a>  
+                  </td></tr>";
         }
         echo '</tr>
             </tbody>
@@ -50,11 +54,11 @@ if (checkCapability("manage_unit_types")) {
         <input type='submit' name='submit' value='Inserir Item' >
         </form>";
     } else if (isset($_POST['estado']) && $_POST['estado'] == 'inserir') {
-        $myDB = connect();
+        //$dbLink = connect();
         if (!empty($_POST['nome'])) {
             $name = $_POST['nome'];
             $inserir = "INSERT INTO subitem_unit_type (name) VALUES ('$name')";
-            mysqli_query($myDB, $inserir);
+            mysqli_query($dbLink, $inserir);
             echo "<div class='success'>";
             if ($inserir) {
                 echo "<h3 class='form_input_title'>Gestão de unidades - inserção</h3>";

@@ -4,6 +4,7 @@ require_once("custom/php/common.php");
 //echo "138 <br>";
 //links
 //transactions
+reset_edicao_dados();
 if( checkCapability("manage_allowed_values") ) {
 
     if (!isset($_REQUEST["estado"])) {
@@ -26,7 +27,7 @@ if( checkCapability("manage_allowed_values") ) {
                 </tr>";
 
         $query_items ='SELECT item.id , item.name FROM item ORDER BY item.name;';
-        $result_item = mysqli_query($mysqli,$query_items);
+        $result_item = mysqli_query($dbLink,$query_items);
 
         if( mysqli_num_rows($result_item) != 0) {
 
@@ -36,10 +37,10 @@ if( checkCapability("manage_allowed_values") ) {
                 //todos
                 $colunas = 'subitem.id AS sub_id, subitem.name , subitem.item_id ,subitem.value_type, subitem.mandatory , subitem.state AS sub_state , subitem_allowed_value.id AS value_id , subitem_allowed_value.value ,subitem_allowed_value.state';
                 $query_Subitems = 'SELECT ' . $colunas . ' FROM subitem LEFT OUTER JOIN subitem_allowed_value ON subitem.id = subitem_allowed_value.subitem_id WHERE subitem.value_type="enum" AND subitem.item_id =' . $item["id"];
-                $result_Subitems = mysqli_query($mysqli, $query_Subitems);
+                $result_Subitems = mysqli_query($dbLink, $query_Subitems);
 
                 //Agrupados (devolve os subitems)
-                $result_Subitems_group = mysqli_query($mysqli, $query_Subitems . ' GROUP BY subitem.name ');
+                $result_Subitems_group = mysqli_query($dbLink, $query_Subitems . ' GROUP BY subitem.name ');
 
                 //aletrar tipode coluna
                 $rowType = switchBackground($rowType);
@@ -52,7 +53,7 @@ if( checkCapability("manage_allowed_values") ) {
                     //percorrer todos os subitems
                     while ($subItem = mysqli_fetch_assoc($result_Subitems_group)) {
                         //tem sempre um linha emobara com nulls
-                        $result_SubSubitems = mysqli_query($mysqli, $query_Subitems . ' AND subitem.name ="' . $subItem["name"] . '"');
+                        $result_SubSubitems = mysqli_query($dbLink, $query_Subitems . ' AND subitem.name ="' . $subItem["name"] . '"');
 
                         //aletrar tipode coluna
                         $rowType2 = switchBackground($rowType2);
@@ -76,9 +77,17 @@ if( checkCapability("manage_allowed_values") ) {
                                     echo "<td class=$rowType3>" . $subSubItem_value["state"] . "</td>";
 
                                     if ($subSubItem_value["state"]=="active"){
-                                        echo "<td class=$rowType3>[Editar] <br> [Desativar] <br> [Apagar]</td>";
+                                        echo "<td class=$rowType3>
+                                                <a href=".$edicao_de_dados_page.'?estado=editar&tipo=valor_permitido&id='.$subSubItem_value["value_id"].">[Editar]</a> <br> 
+                                                <a href=".$edicao_de_dados_page.'?estado=desativar&tipo=valor_permitido&id='.$subSubItem_value["value_id"].">[Desativar]</a> <br>
+                                                <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=valor_permitido&id='.$subSubItem_value["value_id"].">[Apagar]</a> <br>
+                                              </td>";
                                     } else {
-                                        echo "<td class=$rowType3>[Editar] <br> [Ativar] <br> [Apagar]</td>";
+                                        echo "<td class=$rowType3>
+                                                <a href=".$edicao_de_dados_page.'?estado=editar&tipo=valor_permitido&id='.$subSubItem_value["value_id"].">[Editar]</a> <br> 
+                                                <a href=".$edicao_de_dados_page.'?estado=ativar&tipo=valor_permitido&id='.$subSubItem_value["value_id"].">[Ativar]</a> <br>
+                                                <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=valor_permitido&id='.$subSubItem_value["value_id"].">[Apagar]</a> <br>
+                                              </td>";
                                     }
 
                                     echo "</tr>";
@@ -133,9 +142,10 @@ if( checkCapability("manage_allowed_values") ) {
 
         $_SESSION["subitem_id"] = $_REQUEST["subitem"];
 
-        echo"<h3 class='sub_title'>Gestão de valores permitidos - introdução</h3>";
-        echo"<form method='post' action=$current_page>
-                <input type='text' name='nome' placeholder='Valor Permitido'>
+        echo"<h3 class='sub_title'>Gestão de valores permitidos - introdução</h3>
+             <p class='form_input_title'>Nome do valor permitido</p>
+             <form method='post' action=$current_page>
+                <input type='text' name='nome' placeholder='Nome'>
                 <input type='hidden' name='estado' value='inserir'>
                 <hr>
                 <button type='submit' class='continueButton'>Inserir Valor Premitido</button>
@@ -152,7 +162,7 @@ if( checkCapability("manage_allowed_values") ) {
             //$mysqli = connect();
             $wuery_inert = 'INSERT INTO subitem_allowed_value(subitem_id,value,state) VALUES ('.$_SESSION["subitem_id"].',"'.$_REQUEST["nome"].'","active")';
 
-            if (mysqli_query($mysqli, $wuery_inert)) {
+            if (mysqli_query($dbLink, $wuery_inert)) {
                 //Inserção com Sucesso mostrat sucesso
 
                 echo "<div class='success'>
@@ -166,7 +176,7 @@ if( checkCapability("manage_allowed_values") ) {
                         <td>Estado</td>
                     </tr> 
                     <tr class='row1'>
-                        <td>".mysqli_insert_id($mysqli)."</td>
+                        <td>".mysqli_insert_id($dbLink)."</td>
                         <td>" . $_SESSION["subitem_id"] . "</td>
                         <td>" . $_REQUEST["nome"] . "</td>
                         <td>Active</td>
