@@ -2,7 +2,7 @@
 require_once("custom/php/common.php");
 if (checkCapability("insert_values")) {
     if (!isset($_POST['estado'])) {
-        $myDB = connect();
+
         echo "<p>16</p>";
         echo "<h3 class='form_input_title'>Inserção de valores - criança - procurar</h3>";
         echo
@@ -15,13 +15,13 @@ if (checkCapability("insert_values")) {
         </form>";
     } else if (isset($_POST['estado']) && $_POST['estado'] == 'escolher_crianca') {
         echo "<h3 class='form_input_title'>Gestão de unidades - inserção</h3>";
-        $myDB = connect();
+
         if (!empty($_POST['nome']) && !empty($_POST['data'])) {
             //procura nome e data
             $name = $_POST['nome'];
             $data = $_POST['data'];
             $procurarnomeedata= 'SELECT child.name,child.birth_date FROM child WHERE child.name LIKE "%'.$name.'%" && child.birth_date LIKE "%'.$data.'%"';
-            $resultadonomeedata=mysqli_query($myDB, $procurarnomeedata);
+            $resultadonomeedata=mysqli_query($dbLink, $procurarnomeedata);
             while ($show = mysqli_fetch_assoc($resultadonomeedata)) {
                 echo $show["name"] . $show["birth_date"] . "<br>";
             }
@@ -30,7 +30,7 @@ if (checkCapability("insert_values")) {
             //apenas nome
             $nome = $_POST['nome'];
             $procurarnome = 'SELECT child.name,child.birth_date FROM child WHERE child.name like "%' . $nome . '%"';
-            $resultadonome = mysqli_query($myDB, $procurarnome);
+            $resultadonome = mysqli_query($dbLink, $procurarnome);
             while ($show = mysqli_fetch_assoc($resultadonome)) {
                 echo $show["name"] . $show["birth_date"] . "<br>";
             }
@@ -39,7 +39,7 @@ if (checkCapability("insert_values")) {
             //apenas data
             $data = $_POST['data'];
             $procurardata = 'SELECT child.name,child.birth_date FROM child WHERE child.birth_date like "%' . $data . '%"';
-            $resultadodata = mysqli_query($myDB, $procurardata);
+            $resultadodata = mysqli_query($dbLink, $procurardata);
             while ($show = mysqli_fetch_assoc($resultadodata)) {
                 echo $show["name"] . $show["birth_date"] . "<br>";
             }
