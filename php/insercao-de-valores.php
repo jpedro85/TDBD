@@ -190,7 +190,7 @@ if (checkCapability("insert_values")) {
 } else {
     echo "<br>
           <div class='unsuccess'>
-          <p id='obg_main'>Não tem<span id='obg'> autorização </span>para aceder á página<span id='obg'> Gestão de items </span></p>
+          <p id='obg_main'>Não tem<span id='obg'> autorização </span>para aceder á página<span id='obg'> Inserção de valores </span></p>
           </div>";
 }
 ?>

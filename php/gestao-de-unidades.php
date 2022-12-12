@@ -86,7 +86,11 @@ if (checkCapability("manage_unit_types")) {
 } else {
     echo "<br>
           <div class='unsuccess'>
+<<<<<<< Updated upstream
           <p id='obg_main'>Não tem<span id='obg'> autorização </span>para aceder á página<span id='obg'> Gestão de items </span></p>
+=======
+          <p id='obg_main'>Não tem<span id='obg'> autorização </span>para aceder á página<span id='obg'> Gestão de Unidades </span></p>
+>>>>>>> Stashed changes
           </div>";
 }
 ?>
