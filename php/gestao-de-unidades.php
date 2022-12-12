@@ -2,8 +2,8 @@
 require_once("custom/php/common.php");
 reset_edicao_dados();
 if (checkCapability("manage_unit_types")) {
-    if (!isset($_POST['estado'])) {
-        //$dbLink = connect();
+    if (!isset($_REQUEST['estado'])) {
+        //$myDB = connect();
         $query = "SELECT id,name FROM subitem_unit_type ORDER BY name ASC";
         $result = mysqli_query($dbLink, $query);
         $subitem = "";
