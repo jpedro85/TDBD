@@ -16,9 +16,7 @@ Global $edicao_de_dados_page;
 $edicao_de_dados_page = get_site_url().'/edicao-de-dados';
 
 function reset_edicao_dados(){
-    if(isset($_SESSION["dado_alterado_bool"])){
-        $_SESSION["dado_alterado_bool"]=false;
-    }
+    $_SESSION["dado_alterado_bool"]=false;
 }
 
 function connect() {

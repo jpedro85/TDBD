@@ -143,29 +143,24 @@ if( checkCapability("manage_items") ) {
         echo "<h3 class='sub_title'>Gestão de itens - Inserção</h3>";
 
         //verificar o campo nome se está vazio
-        if (isset($_REQUEST["nome"]) && $_REQUEST["nome"] != "")
-            $request_text = true;
-        else {
-            $request_text = false;
+        $valid_form = true;
+        if ( empty($_REQUEST["nome"]) ) {
+            $valid_form = false;
             $list["nome"] = 'Nome';
         }
         //verificar o campo state se foi escolhido
-        if (isset($_REQUEST["rad_state"]))
-            $request_rad_state = true;
-        else {
-            $request_rad_state = false;
+        if (!isset($_REQUEST["rad_state"])){
+            $valid_form = false;
             $list["state"] = 'Estado';
         }
         //verificar o campo tipo se foi escolhido
-        if (isset($_REQUEST["radio_type"]))
-            $request_rad_type = true;
-        else {
-            $request_rad_type = false;
+        if (!isset($_REQUEST["radio_type"])){
+            $valid_form = false;
             $list["type"] = 'Tipo';
         }
 
         //se todos preenchidos
-        if ($request_text && $request_rad_state && $request_rad_type && !$_SESSION["Item_added"] ) {
+        if ($valid_form && !$_SESSION["Item_added"] ) {
 
             //Inserção
             if (mysqli_query($dbLink, 'INSERT INTO item(name,state,item_type_id) VALUES ("' . $_REQUEST["nome"] . '","' . $_REQUEST["rad_state"] . '",' . $_REQUEST["radio_type"] . ')')) {

@@ -16,7 +16,7 @@ mysqli_autocommit($dbLink,false);
 //if ( isset($_SESSION["dado_alterado_last_estado"]) && isset($_REQUEST["estado"]) && ( ( $_SESSION["dado_alterado_last_estado"]!=$_REQUEST["estado"] ) || ( $_SESSION["dado_alterado_last_tipo"]!=$_REQUEST["tipo"] ) || ( $_SESSION["dado_alterado_last_id"]!=$_REQUEST["id"])  ) )
   //  $_SESSION["dado_alterado_bool"]=false;
 
-if( !$_SESSION["dado_alterado_bool"]  && isset( $_REQUEST["estado"] ) && isset( $_REQUEST["tipo"] ) && isset( $_REQUEST["id"] ) )
+if( isset($_SESSION["dado_alterado_bool"]) && !$_SESSION["dado_alterado_bool"]  && isset( $_REQUEST["estado"] ) && isset( $_REQUEST["tipo"] ) && isset( $_REQUEST["id"] ) )
 {
 
     if( $_REQUEST["estado"] == "editar" ){
@@ -75,11 +75,33 @@ if( !$_SESSION["dado_alterado_bool"]  && isset( $_REQUEST["estado"] ) && isset( 
 
             } else {
 
-                mysqli_begin_transaction($dbLink);
-                if( mysqli_query($dbLink,'UPDATE item SET item.item_type_id='.$_REQUEST["radio_type"].' ,item.name="'.$_REQUEST["nome"].'" ,item.state="'.$_REQUEST["rad_state"].'" WHERE item.id='.$_REQUEST["id"]  ) )
-                    show_success_tipo("gestao-de-items",$_REQUEST["estado"] ,"item",$_REQUEST["id"],$dbLink);
-                else
-                    rollback( $_REQUEST["estado"] ,$dbLink);
+                //verificar o campo nome se está vazio
+                $valid_form = true;
+                if ( empty($_REQUEST["nome"]) ){
+                    $valid_form = false;
+                    $list["nome"] = 'Nome';
+                }
+                //verificar o campo state se foi escolhido
+                if (!isset($_REQUEST["rad_state"])){
+                    $valid_form = false;
+                    $list["state"] = 'Estado';
+                }
+                //verificar o campo tipo se foi escolhido
+                if (!isset($_REQUEST["radio_type"])){
+                    $valid_form = false;
+                    $list["type"] = 'Tipo';
+                }
+
+                if($valid_form) {
+
+                    mysqli_begin_transaction($dbLink);
+                    if (mysqli_query($dbLink, 'UPDATE item SET item.item_type_id=' . $_REQUEST["radio_type"] . ' ,item.name="' . $_REQUEST["nome"] . '" ,item.state="' . $_REQUEST["rad_state"] . '" WHERE item.id=' . $_REQUEST["id"]))
+                        show_success_tipo("gestao-de-items", $_REQUEST["estado"], "item", $_REQUEST["id"], $dbLink);
+                    else
+                        rollback($_REQUEST["estado"], $dbLink);
+
+                } else
+                    show_campos_errados($list);
 
             }
 
@@ -93,14 +115,14 @@ if( !$_SESSION["dado_alterado_bool"]  && isset( $_REQUEST["estado"] ) && isset( 
 
                         $subitem = mysqli_fetch_assoc($resul);
 
-                        echo "<h3 class='sub_title'>Edição de dados- Alterar valores</h3>
+                        echo "<h3 class='sub_title'>Edição de dados- Alterar valores</h3>//--nome--
                              <p class='form_input_title'>Nome do subitem</p>
                              <form method='post' action=" . $current_page . '?estado=' . $_REQUEST["estado"] . '&tipo=' . $_REQUEST["tipo"] . '&id=' . $_REQUEST["id"] . ">
-                                <input type='text' placeholder='Nome' name='nome' value=" . $subitem["name"] . ">
+                                <input type='text' placeholder='Nome' name='nome' value=" . $subitem["name"] . "> //--nome -> subitem.name
                                 <p class='form_input_title'>Tipo de valor</p>
                                 <ul>";
 
-                        $valType = get_enum_values($dbLink, "subitem", "value_type");
+                        $valType = get_enum_values($dbLink, "subitem", "value_type");//--subType -> campo value_type
                         foreach ($valType as $type) {//radio buttons do tipo de valor
                             echo '<li><input ' . ($subitem["value_type"] == $type ? "checked" : "") . ' type="radio" name="subType" value="' . $type . '"><label>' . $type . '</label></li>';
                         }
@@ -111,21 +133,53 @@ if( !$_SESSION["dado_alterado_bool"]  && isset( $_REQUEST["estado"] ) && isset( 
                             if( mysqli_num_rows($resultItem) != 0 ){
 
                                 //Selectbox
-                                echo "<p class='form_input_title'>Selecione um item</p>
+                                echo "<p class='form_input_title'>Item</p> // --itemName -> campo item_id
                                       <select name='ItemName' >
                                       <option>Selecione Um item</option>";
                                 while ($item = mysqli_fetch_assoc($resultItem)) {
                                     $option = str_replace(" ", "_", $item["name"]);
-                                    echo '<option value="'.$item["id"].'">' . $item["name"] . '</option>';
+                                    echo '<option value="'.$item["id"].'" '.( $subitem["item_id"]==$item["id"] ? "selected ":"").'>' . $item["name"] . '</option>';
                                 }
                                 echo '</select><br>';
 
-
                             } else
                                 show_error_geral("gestao-de-subitems","Nenhum item encontrado.");
-
                         } else
                             show_error_geral("gestao-de-subitems","A procura de items falhou.");
+
+                        echo "<p class='form_input_title'>Tipo do campo no formolário</p>";// --formType -> form_field_type
+                        $formFieldType = get_enum_values($dbLink, "subitem", "form_field_type");
+                        foreach ($formFieldType as $formType) {
+                            echo '<li><input type="radio" name="formType" value="' . $formType . '" '.( $subitem["form_field_type"]==$formType ? "checked": "").'><label>' . $formType . '</label></li>';
+                        }
+
+                        echo "<p class='form_input_title'>Tipo de unidade</p>";
+                        if ($resultUnit_name = mysqli_query($dbLink, "SELECT * FROM subitem_unit_type")) {
+
+                           if(mysqli_num_rows($resultUnit_name) != 0){
+
+                                echo '<select  name="subUnitType" id="subUnitType" >'; // --subUnitType -> campo unit_type_id
+                                while ($unit = mysqli_fetch_assoc($resultUnit_name)) {
+                                        echo '<option value=' . $unit["id"] .' '.( $subitem["unit_type_id"]==$unit["id"] ? "selected ":"").'>' . $unit["name"] . '</option>';
+                                }
+                                echo '</select><br>';
+
+                            } else
+                                show_error_geral("gestao-de-subitems","Nenhum tipo de unidade encontrado.");
+                        } else
+                            show_error_geral("gestao-de-subitems","A procura de tipos de unidade falhou.");
+
+                        echo'<h4 class="form_input_title">Ordem do campo no formulario</h4>
+                            <input type="text" id="formOrder" name="formOrder" placeholder="0" value="'.$subitem["form_field_order"].'"><br>// --formorder -> campo form_fiel_order
+                            <p class="form_input_title">Obrigatório</p>
+                            <input type="radio" name="mandatory" value="Sim" '.($subitem["mandatory"]==1 ? "checked" : "").'><label>Sim</label><br> // --mandatory -> campo obrigatório
+                            <input type="radio" name="mandatory" value="Nao" '.($subitem["mandatory"]==0 ? "checked" : "").'><label>Nao</label><br>
+                            <input type="hidden" name="update" value="inserir"><br>
+                            <hr>
+                            <button type="submit" class="continueButton">Alterar</button>
+                        </form>';
+
+                        //aqui
 
 
                     } else
@@ -136,13 +190,46 @@ if( !$_SESSION["dado_alterado_bool"]  && isset( $_REQUEST["estado"] ) && isset( 
 
             } else {
 
-               /* mysqli_begin_transaction($dbLink);
-                if( mysqli_query($dbLink,'UPDATE item SET item.item_type_id='.$_REQUEST["radio_type"].' ,item.name="'.$_REQUEST["nome"].'" ,item.state="'.$_REQUEST["rad_state"].'" WHERE item.id='.$_REQUEST["id"]  ) )
-                    show_success_tipo("gestao-de-items",$_REQUEST["estado"] ,"item",$_REQUEST["id"],$dbLink);
-                else
-                    rollback( $_REQUEST["estado"] ,$dbLink);*/
+                $valid_form = true;
+                if (empty($_REQUEST["nome"]) ) {
+                    $list["nome"] = "Nome do subitem";
+                    $valid_form = false;
+                }
+                if (empty($_REQUEST["subType"])) {
+                    $list["subType"] .= "Tipo do valor";
+                    $valid_form = false;
+                }
+                if (empty($_REQUEST["ItemName"]) && is_numeric($_REQUEST["ItemName"])) {
+                    $list["ItemName"] = "Item";
+                    $valid_form = false;
+                }
+                if (empty($_REQUEST["formType"])) {
+                    $list["formType"] = "Tipo do campo no formulario";
+                    $valid_form = false;
+                }
+                if (empty($_REQUEST["subUnitType"])) {
+                    $list["subUnitType"] = "Tipo de unidade";
+                    $valid_form = false;
+                }
+                if (empty($_REQUEST["formOrder"]) || !filter_var($_REQUEST["formOrder"], FILTER_VALIDATE_INT) || $_REQUEST["formOrder"] < 0) {
+                    $list["formOrder"] = "Ordem do campo no formulario";
+                    $valid_form = false;
+                }
+                if (empty($_REQUEST["mandatory"])) {
+                    $list["mandatory"] = "Obrigatório";
+                    $valid_form = false;
+                }
 
-                echo "UPDATE";
+                if ($valid_form){
+
+                    mysqli_begin_transaction($dbLink);
+                    if( mysqli_query($dbLink,'UPDATE subitem SET subitem.name='.$_REQUEST["nome"].' , sunitem.item_id="'.$_REQUEST["ItemName"].'" , subitem.value_type="'.$_REQUEST["subType"].'",subitem.form_field_type="'.$_REQUEST["formType"].'", subitem.unit_type_id="'.$_REQUEST["subUnitType"].'", subitem.form_field_order'.$_REQUEST["formOrder"].' , subitem.mandatory= '.$_REQUEST["mandatory"].' WHERE subitem.id='.$_REQUEST["id"]  ) )
+                        show_success_tipo("gestao-de-subitems",$_REQUEST["estado"] ,"item",$_REQUEST["id"],$dbLink);
+                    else
+                        rollback( $_REQUEST["estado"] ,$dbLink);
+
+                } else
+                    show_campos_errados($list);
 
             }
 
@@ -259,7 +346,7 @@ if( !$_SESSION["dado_alterado_bool"]  && isset( $_REQUEST["estado"] ) && isset( 
 
 } else {
 
-    if( $_SESSION["dado_alterado_bool"] && isset($_REQUEST["estado"]) )
+    if( isset($_SESSION["dado_alterado_bool"]) && $_SESSION["dado_alterado_bool"] && isset($_REQUEST["estado"]) )
     {
         echo '<div class="unsuccess">
                  <p id="obg_main" > A operação '.$_SESSION["dado_alterado"].' no  id <span id="obg"> '. $_SESSION["dado_alterado_last_id"].' </span> na  tabela <span id="obg"> '.$_SESSION["dado_alterado_last_tabela"].' já foi executada!</span>  </p>
@@ -325,6 +412,18 @@ function show_error_geral($page,$message){
             <p id='suc_main'> <span id='suc' > $message </span>. </p>
           </div>
           <a href=".$_SESSION["dado_alterado_page"]."> <button class='continueButton' >Continuar</button> </a>";
+}
+
+function show_campos_errados($list){
+    echo "<div class='unsuccess warning_list' > 
+                    <p id='obg_main' > O(s) campo(s) seguinte(s) é(são) <span id='obg'> Obrigatório(s): </span>  </p>
+                    <ul>";
+    foreach ($list as $item) {
+        echo "<li class='warning_list'>$item</li>";
+    }
+
+    echo"<br></ul></div>";
+    voltar_atras();
 }
 
 function rollback($categoria,$link){
