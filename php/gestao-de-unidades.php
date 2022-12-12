@@ -1,13 +1,13 @@
 <?php
 require_once("custom/php/common.php");
 if (checkCapability("manage_unit_types")) {
-    if (!isset($_POST['estado'])) {
+    if (!isset($_REQUEST['estado'])) {
         $myDB = connect();
         $query = "SELECT id,name FROM subitem_unit_type ORDER BY name ASC";
         $result = mysqli_query($myDB, $query);
         $subitem = "";
         $cor = "row2";
-        echo "<p>toladinha23</p>";
+        echo "<p>6</p>";
         echo '<table >
                   <tbody>
                         <tr class="tableHead">
@@ -24,15 +24,22 @@ if (checkCapability("manage_unit_types")) {
             echo "<td class=$cor>" . $row['name'] . '</td>';
             $querysubitem = "SELECT subitem.name,subitem.item_id FROM subitem WHERE unit_type_id=" . $row["id"];
             $resultsubitem = mysqli_query($myDB, $querysubitem);
+            $contador=0;
+            $linhas=mysqli_num_rows($resultsubitem);
             while ($rowsubitem = mysqli_fetch_assoc($resultsubitem)) {
                 $queryitem = "SELECT item.name FROM item WHERE item.id=" . $rowsubitem["item_id"];
                 $resultitem = mysqli_query($myDB, $queryitem);
                 while ($rowitem = mysqli_fetch_assoc($resultitem)) {
-                    $subitem .= " " . $rowsubitem["name"] . "(" . $rowitem["name"] . ")";
+                    $contador+=1;
+                    if($contador==$linhas){
+                        $subitem .= " " . $rowsubitem["name"] . "(" . $rowitem["name"] . ")";
+                    }else{
+                        $subitem .= " " . $rowsubitem["name"] . "(" . $rowitem["name"] . "), ";
+                    }
                 }
             }
             if ($subitem == "") {
-                echo "<td class=$cor>NULL</td>";
+                echo "<td class=$cor>Não há tipos de unidades</td>";
             } else {
                 echo "<td class=$cor>" . $subitem . '</td>';
             }
@@ -49,10 +56,10 @@ if (checkCapability("manage_unit_types")) {
         <hr>
         <input type='submit' name='submit' value='Inserir Item' >
         </form>";
-    } else if (isset($_POST['estado']) && $_POST['estado'] == 'inserir') {
+    } else if (isset($_REQUEST['estado']) && $_REQUEST['estado'] == 'inserir') {
         $myDB = connect();
-        if (!empty($_POST['nome'])) {
-            $name = $_POST['nome'];
+        if (!empty($_REQUEST['nome'])) {
+            $name = $_REQUEST['nome'];
             $inserir = "INSERT INTO subitem_unit_type (name) VALUES ('$name')";
             mysqli_query($myDB, $inserir);
             echo "<div class='success'>";
@@ -79,7 +86,7 @@ if (checkCapability("manage_unit_types")) {
 } else {
     echo "<br>
           <div class='unsuccess'>
-          <p id='obg_main'>Não tem<span id='obg'> autorização </span>para aceder á página<span id='obg'> Gestão de unidades </span></p>
+          <p id='obg_main'>Não tem<span id='obg'> autorização </span>para aceder á página<span id='obg'> Gestão de items </span></p>
           </div>";
 }
 ?>
