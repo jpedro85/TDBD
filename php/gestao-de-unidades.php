@@ -1,5 +1,6 @@
 <?php
 require_once("custom/php/common.php");
+reset_edicao_dados();
 if (checkCapability("manage_unit_types")) {
     if (!isset($_REQUEST['estado'])) {
         $myDB = connect();
@@ -43,7 +44,10 @@ if (checkCapability("manage_unit_types")) {
             } else {
                 echo "<td class=$cor>" . $subitem . '</td>';
             }
-            echo "<td class=$cor>[Apagar]</td></tr>";
+            echo "<td class=$cor>
+                    <a href=".$edicao_de_dados_page.'?estado=editar&tipo=unidade&id='.$row["id"].">[Editar]</a>  
+                    <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=unidate&id='.$row["id"].">[Apagar]</a>  
+                  </td></tr>";
         }
         echo '</tr>
             </tbody>

@@ -1,7 +1,7 @@
 <?php
 require_once("custom/php/common.php");
-
-$dbLink = connect();
+reset_edicao_dados();
+//$dbLink = connect();
 if (checkCapability("manage_subitems")) {
     if (!mysqli_select_db($dbLink, "bitnami_wordpress")) {
         die("Connection to DB failed: " . mysqli_connect_error());
@@ -184,9 +184,14 @@ if (checkCapability("manage_subitems")) {
                             <td class="' . $bckgType2 . '">' . $rowSubitem["form_field_order"] . '</td>
                             <td class="' . $bckgType2 . '">' . $rowSubitem["mandatory"] . '</td>
                             <td class="' . $bckgType2 . '">' . $rowSubitem["state"] . '</td>
-                            <td class="' . $bckgType2 . '"><a href="' . $current_page . '?estado=editar&item=' . $rowItem["id"] . '">[editar]</a><br>
-                                <a href="' . $current_page . '?estado=desativar&item=' . $rowItem["id"] . '">[desativar]</a><br>
-                                <a href="' . $current_page . '?estado=apagar&item=' . $rowItem["id"] . '">[apagar]</a></td>
+                            <td class="' . $bckgType2 . '"><a href="' . $edicao_de_dados_page . '?estado=editar&tipo=subitem&id=' . $rowSubitem["id"] . '">[editar]</a><br>';
+
+                                if($rowSubitem["state"]=='inactive')
+                                    echo '<a href="' . $edicao_de_dados_page . '?estado=ativar&tipo=subitem&id=' . $rowSubitem["id"] . '">[ativar]</a><br>';
+                                else
+                                    echo '<a href="' . $edicao_de_dados_page . '?estado=desativar&tipo=subitem&id=' . $rowSubitem["id"] . '">[desativar]</a><br>';
+
+                            echo '<a href="' . $edicao_de_dados_page . '?estado=apagar&tipo=subitem&id=' . $rowSubitem["id"] . '">[apagar]</a></td>
                             </tr>';
                             }
                         } else {
@@ -199,9 +204,16 @@ if (checkCapability("manage_subitems")) {
                           <td class="' . $bckgType2 . '">' . $rowSubitem["form_field_order"] . '</td>
                           <td class="' . $bckgType2 . '">' . $rowSubitem["mandatory"] . '</td>
                           <td class="' . $bckgType2 . '">' . $rowSubitem["state"] . '</td>
-                          <td class="' . $bckgType2 . '"><a href="' . $current_page . '?estado=editar&item=' . $rowItem["id"] . '">[editar]</a><br>
-                              <a href="' . $current_page . '?estado=desativar&item=' . $rowItem["id"] . '">[desativar]</a><br>
-                              <a href="' . $current_page . '?estado=apagar&item=' . $rowItem["id"] . '">[apagar]</a></td>
+                          <td class="' . $bckgType2 . '"><a href="' . $edicao_de_dados_page . '?estado=editar&tipo=subitem&id=' . $rowSubitem["id"] . '">[editar]</a><br>';
+
+                            if($rowSubitem["state"]=='inactive'){
+                                echo '<a href="' . $edicao_de_dados_page . '?estado=ativar&tipo=subitem&id=' . $rowSubitem["id"] . '">[ativar]</a><br>';
+                            }
+                            else {
+                                echo '<a href="' . $edicao_de_dados_page . '?estado=desativar&tipo=subitem&id=' . $rowSubitem["id"] . '">[desativar]</a><br>';
+                            }
+
+                           echo   '<a href="' . $edicao_de_dados_page . '?estado=apagar&tipo=subitem&id=' . $rowSubitem["id"] . '">[apagar]</a></td>
                           </tr>';
                         }
                     }

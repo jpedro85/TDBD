@@ -1,8 +1,8 @@
 <?php
 require_once("custom/php/common.php");
-
-$dbLink = connect();
-if (checkCapability("manage_subitems")) {
+reset_edicao_dados();
+//$dbLink = connect();
+if (checkCapability("manage_records")) {
     if (!mysqli_select_db($dbLink, "bitnami_wordpress")) {
         die("Connection to DB failed: " . mysqli_connect_error());
     } else {
