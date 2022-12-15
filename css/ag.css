@@ -75,6 +75,20 @@ table {
 
 }
 
+.question {
+
+    width: 100%;
+    height: 25%;
+    border-radius: 25px;
+    border: 1px solid #074479;
+    background-color: #66c4e0;
+    animation-name: animation1;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+    text-align-all: center;
+
+}
+
 .success {
 
     width: 100%;

@@ -53,7 +53,7 @@ if( checkCapability("manage_allowed_values") ) {
                     //percorrer todos os subitems
                     while ($subItem = mysqli_fetch_assoc($result_Subitems_group)) {
                         //tem sempre um linha emobara com nulls
-                        $result_SubSubitems = mysqli_query($dbLink, $query_Subitems . ' AND subitem.name ="' . $subItem["name"] . '"');
+                        $result_SubSubitems = mysqli_query($dbLink, $query_Subitems . ' AND subitem.name ="' . $subItem["name"] . '" ORDER BY subitem_allowed_value.value');
 
                         //aletrar tipode coluna
                         $rowType2 = switchBackground($rowType2);
@@ -149,6 +149,7 @@ if( checkCapability("manage_allowed_values") ) {
                 <input type='hidden' name='estado' value='inserir'>
                 <hr>
                 <button type='submit' class='continueButton'>Inserir Valor Premitido</button>
+                <a href=$current_page ><button type='button' class='continueButton'>Cancelar</button></a>
             </form>";
 
         $_SESSION["SubAllowedValue_added"]=false;
@@ -159,7 +160,8 @@ if( checkCapability("manage_allowed_values") ) {
 
         if( isset($_REQUEST["nome"]) && $_REQUEST["nome"]!="" && !$_SESSION["SubAllowedValue_added"] )
         {
-            //$mysqli = connect();
+
+            mysqli_begin_transaction($dbLink);
             $wuery_inert = 'INSERT INTO subitem_allowed_value(subitem_id,value,state) VALUES ('.$_SESSION["subitem_id"].',"'.$_REQUEST["nome"].'","active")';
 
             if (mysqli_query($dbLink, $wuery_inert)) {
@@ -184,11 +186,12 @@ if( checkCapability("manage_allowed_values") ) {
                 </table>
                 <a href=$current_page> <button class='continueButton' >Continuar</button> </a>";
 
+                mysqli_commit($dbLink);
                 $_SESSION["SubAllowedValue_added"]=true;
 
             } else {
 
-
+                mysqli_rollback($dbLink);
                 //mostrar o Insucesso
                 echo "<div class='unsuccess'> 
                 <p id='obg_main' > A inserção  <span id='obg'> Falhou: </span>  </p>";

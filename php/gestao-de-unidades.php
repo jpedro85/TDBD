@@ -46,7 +46,7 @@ if (checkCapability("manage_unit_types")) {
             }
             echo "<td class=$cor>
                     <a href=".$edicao_de_dados_page.'?estado=editar&tipo=unidade&id='.$row["id"].">[Editar]</a>  
-                    <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=unidate&id='.$row["id"].">[Apagar]</a>  
+                    <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=unidade&id='.$row["id"].">[Apagar]</a>  
                   </td></tr>";
         }
         echo '</tr>

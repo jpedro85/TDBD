@@ -1,7 +1,7 @@
 <?php
 require_once("custom/php/common.php");
 //gestao de itens
-echo "189 <br>";
+echo "190 <br>";
 //check de capabilitie
 
 reset_edicao_dados();
@@ -57,7 +57,7 @@ if( checkCapability("manage_items") ) {
                                     echo"<td class=$type2>
                                             <a href=".$edicao_de_dados_page.'?estado=editar&tipo=item&id='.$row2["id"].">[Editar]</a>  
                                             <a href=".$edicao_de_dados_page.'?estado=desativar&tipo=item&id='.$row2["id"].">[Desativar]</a>  
-                                            <a href=".$edicao_de_dados_page.'?estado=editar&tipo=item&id='.$row2["id"].">[Apagar]</a>  
+                                            <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=item&id='.$row2["id"].">[Apagar]</a>  
                                         </td>";
                                     break;
                                 case "inactive":
@@ -163,6 +163,7 @@ if( checkCapability("manage_items") ) {
         if ($valid_form && !$_SESSION["Item_added"] ) {
 
             //Inserção
+            mysqli_begin_transaction($dbLink);
             if (mysqli_query($dbLink, 'INSERT INTO item(name,state,item_type_id) VALUES ("' . $_REQUEST["nome"] . '","' . $_REQUEST["rad_state"] . '",' . $_REQUEST["radio_type"] . ')')) {
 
                 //mostrar o Sucesso
@@ -185,9 +186,11 @@ if( checkCapability("manage_items") ) {
                 </table>
                 <a href=$current_page> <button class='continueButton' >Continuar</button> </a>";
 
+                mysqli_commit($dbLink);
                 $_SESSION["Item_added"]=true;
 
             } else {
+                mysqli_rollback($dbLink);
                 //mostrar o Insucesso
                 echo "<div class='unsuccess'> 
                         <p id='obg_main' > A inserção  <span id='obg'> Falhou: </span>  </p>
@@ -206,7 +209,7 @@ if( checkCapability("manage_items") ) {
 
              }else{//erro de campo
 
-                echo "<div class='unsuccess warning_list' > 
+                echo "<div class='unsuccess ' > 
                     <p id='obg_main' > O(s) campo(s) seguinte(s) é(são) <span id='obg'> Obrigatório(s): </span>  </p>
                     <ul>";
                 foreach ($list as $item) {
