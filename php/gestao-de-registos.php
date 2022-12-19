@@ -168,7 +168,7 @@ if (checkCapability("manage_records")) {
                         <h4 class="form_input_title">Endereço de e-mail do tutor</h4>
                         <input type="text" id="tutorEmail" name="tutorEmail"><br>
                         <input type="hidden" name="estado" value="validar"><br>
-                        <input type="submit" class="continueButton" value="Submeter">';
+                        <button type="submit" class="continueButton">Submeter</button>';
                 $_SESSION["childAdded"] = false;
             } else {
                 echo "<div class='unsuccess warnings'>
