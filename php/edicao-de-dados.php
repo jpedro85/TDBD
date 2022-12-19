@@ -322,6 +322,7 @@ if( isset($_SESSION["dado_alterado_bool"]) && !$_SESSION["dado_alterado_bool"]  
 
         } else if( $_REQUEST["tipo"] == "resgisto" ) {
             teste();
+
         } else {
             show_error_tipo();
         }
@@ -381,7 +382,7 @@ if( isset($_SESSION["dado_alterado_bool"]) && !$_SESSION["dado_alterado_bool"]  
                      <form method='post' action=" . $current_page . '?estado=' . $_REQUEST["estado"] . '&tipo=' . $_REQUEST["tipo"] . '&id=' . $_REQUEST["id"] . ">
                         <input type='hidden' name='update' value='true'>
                         <button type='submit' class='continueButton'>Apagar</button>
-                        <a href='".get_site_url().'/gestao-de-itens'."' ><button type='button' class='continueButton'>Cancelar</button></a>
+                        <a href='".get_site_url().'/gestao-de-items'."' ><button type='button' class='continueButton'>Cancelar</button></a>
                      </form>";
 
             } else {
@@ -444,7 +445,7 @@ if( isset($_SESSION["dado_alterado_bool"]) && !$_SESSION["dado_alterado_bool"]  
                             <li class='warning_list' >Os valores assossiados ao subitem assossiados ao subitem.</li>
                             <li class='warning_list' >Os valores permitidos assossiados ao subitem.</li>
                         </ul>
-                        <p id='obg_main'> Deseja continuar com a opreração <span id='obg'>apagar</span> o subitem com o <span id='obg'>id</span>> ".$_REQUEST["id"]." ? </p>
+                        <p id='obg_main'> Deseja continuar com a opreração <span id='obg'>apagar</span> o subitem com o <span id='obg'>id</span> ".$_REQUEST["id"]." ? </p>
                         </div>
                      <form method='post' action=" . $current_page . '?estado=' . $_REQUEST["estado"] . '&tipo=' . $_REQUEST["tipo"] . '&id=' . $_REQUEST["id"] . ">
                         <input type='hidden' name='update' value='true'>
@@ -478,7 +479,7 @@ if( isset($_SESSION["dado_alterado_bool"]) && !$_SESSION["dado_alterado_bool"]  
             if(!isset($_REQUEST["update"]) ){
 
                 echo "<div class='question' > 
-                        <p id='obg_main'> Deseja continuar com a opreração <span id='obg'>apagar</span> o valor permitido com o <span id='obg'>id</span>> ".$_REQUEST["id"]." ? </p>
+                        <p id='obg_main'> Deseja continuar com a opreração <span id='obg'>apagar</span> o valor permitido com o <span id='obg'>id</span> ".$_REQUEST["id"]." ? </p>
                         </div>
                      <form method='post' action=" . $current_page . '?estado=' . $_REQUEST["estado"] . '&tipo=' . $_REQUEST["tipo"] . '&id=' . $_REQUEST["id"] . ">
                         <input type='hidden' name='update' value='true'>
@@ -505,7 +506,7 @@ if( isset($_SESSION["dado_alterado_bool"]) && !$_SESSION["dado_alterado_bool"]  
                         <ul>
                             <li class='warning_list' >Os subitems com o unyt type id igual ".$_REQUEST["id"].".</li>
                         </ul>
-                        <p id='obg_main'> Deseja continuar com a opreração <span id='obg'>apagar</span> o tipo de unidade com o <span id='obg'>id</span>> ".$_REQUEST["id"]." ? </p>
+                        <p id='obg_main'> Deseja continuar com a opreração <span id='obg'>apagar</span> o tipo de unidade com o <span id='obg'>id</span> ".$_REQUEST["id"]." ? </p>
                         </div>
                      <form method='post' action=" . $current_page . '?estado=' . $_REQUEST["estado"] . '&tipo=' . $_REQUEST["tipo"] . '&id=' . $_REQUEST["id"] . ">
                         <input type='hidden' name='update' value='true'>
