@@ -1,7 +1,8 @@
 <?php
 require_once("custom/php/common.php");
 reset_edicao_dados();
-//$dbLink = connect();
+
+echo 0;
 if (checkCapability("manage_records")) {
     if (!mysqli_select_db($dbLink, "bitnami_wordpress")) {
         die("Connection to DB failed: " . mysqli_connect_error());
@@ -101,34 +102,46 @@ if (checkCapability("manage_records")) {
                                 <td>' . $rowChild["birth_date"] . '</td>
                                 <td>' . $rowChild["tutor_name"] . '</td>
                                 <td>' . $rowChild["tutor_phone"] . '</td>
-                                <td>' . $rowChild["tutor_email"] . '</td>';
+                                <td>' . (($rowChild["tutor_email"] == null || $rowChild["tutor_email"] == "") ? "Não possui email na BD" : $rowChild["tutor_email"]) . '</td>';
                     $info = "";
                     $queryItem = "SELECT id,name FROM item ORDER BY name ASC";
                     $resultItem = mysqli_query($dbLink, $queryItem);
                     while ($rowItem = mysqli_fetch_assoc($resultItem)) {
-                        $querySubitem = "SELECT id,name FROM subitem WHERE item_id=" . $rowItem["id"];
-                        $resultSubitem = mysqli_query($dbLink, $querySubitem);
-                        $itemName = strtoupper($rowItem["name"]) . ": ";
+                        $itemName = strtoupper($rowItem["name"]) . ":";
                         $done = false;
-                        while ($rowSubitem = mysqli_fetch_assoc($resultSubitem)) {
-                            $queryValue = "SELECT value FROM value WHERE child_id =" . $rowChild["id"] . " AND subitem_id=" . $rowSubitem["id"];
-                            $resultValue = mysqli_query($dbLink, $queryValue);
-                            $subitemName = "<strong>" . $rowSubitem["name"] . "</strong> (";
-                            $counter = 1;
-                            if (mysqli_num_rows($resultValue) != 0) {
-                                if (!$done) {
-                                    $info .= $itemName;
-                                    $done = true;
-                                }
-                                $info .= $subitemName;
-                                while ($rowValue = mysqli_fetch_assoc($resultValue)) {
-                                    if (mysqli_num_rows($resultValue) == $counter) {
-                                        $info .= $rowValue["value"] . "); ";
-                                    } else if (!empty($rowValue["value"]) && $counter < mysqli_num_rows($resultValue)) {
-                                        $info .= $rowValue["value"] . ",";
-                                        $counter++;
-                                    } else {
-                                        $counter++;
+                        $queryDateProducer = "SELECT DISTINCT date, producer FROM value";
+                        $resultDateProducer = mysqli_query($dbLink, $queryDateProducer);
+                        while ($rowDateProducer = mysqli_fetch_assoc($resultDateProducer)) {
+                            $querySubitem = "SELECT id,name,unit_type_id FROM subitem WHERE item_id=" . $rowItem["id"];
+                            $resultSubitem = mysqli_query($dbLink, $querySubitem);
+                            $dateProducer = "<br>[editar][apagar] - <strong>" . $rowDateProducer["date"] . "</strong> (" . $rowDateProducer["producer"] . ") -";
+                            $relatedDate = false;
+                            while ($rowSubitem = mysqli_fetch_assoc($resultSubitem)) {
+                                $queryValue = "SELECT value FROM value WHERE child_id =" . $rowChild["id"] . " AND subitem_id=" . $rowSubitem["id"] . " AND date='" . $rowDateProducer["date"] . "' AND producer='" . $rowDateProducer["producer"] . "'";
+                                $resultValue = mysqli_query($dbLink, $queryValue);
+                                $resultFetchedUnit = mysqli_query($dbLink, "SELECT name FROM subitem_unit_type WHERE id=" . $rowSubitem["unit_type_id"]);
+                                $resultFetchedUnit != null ? $fetchedUnit = mysqli_fetch_assoc($resultFetchedUnit) : $fetchedUnit = null;
+                                $subitemName = "<strong>" . $rowSubitem["name"] . "</strong> (";
+                                $counter = 1;
+                                if (mysqli_num_rows($resultValue) != 0) {
+                                    if (!$done) {
+                                        $info .= $itemName;
+                                        $done = true;
+                                    }
+                                    if (!$relatedDate) {
+                                        $info .= $dateProducer;
+                                        $relatedDate = true;
+                                    }
+                                    $info .= $subitemName;
+                                    while ($rowValue = mysqli_fetch_assoc($resultValue)) {
+                                        if (mysqli_num_rows($resultValue) == $counter) {
+                                            (!is_null($fetchedUnit) && array_key_exists("name", $fetchedUnit)) ? $info .= $rowValue["value"] . " " . $fetchedUnit["name"] . "); " : $info .= $rowValue["value"] . "); ";
+                                        } else if (!empty($rowValue["value"]) && $counter < mysqli_num_rows($resultValue)) {
+                                            (!is_null($fetchedUnit) && array_key_exists("name", $fetchedUnit)) ? $info .= $rowValue["value"] . " " . $fetchedUnit["name"] . "," : $info .= $rowValue["value"] . ",";
+                                            $counter++;
+                                        } else {
+                                            $counter++;
+                                        }
                                     }
                                 }
                             }
@@ -155,7 +168,7 @@ if (checkCapability("manage_records")) {
                         <h4 class="form_input_title">Endereço de e-mail do tutor</h4>
                         <input type="text" id="tutorEmail" name="tutorEmail"><br>
                         <input type="hidden" name="estado" value="validar"><br>
-                        <input type="submit" value="Submeter">';
+                        <button type="submit" class="continueButton">Submeter</button>';
                 $_SESSION["childAdded"] = false;
             } else {
                 echo "<div class='unsuccess warnings'>

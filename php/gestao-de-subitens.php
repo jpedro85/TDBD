@@ -288,7 +288,7 @@ if (checkCapability("manage_subitems")) {
             <input type="radio" name="mandatory" checked value="Sim"><label>Sim</label><br>
             <input type="radio" name="mandatory" value="Nao"><label>Nao</label><br>
             <input type="hidden" name="estado" value="inserir"><br>
-            <input type="submit" value="Inserir Subitem">
+            <button type="submit" class="continueButton">Inserir Subitem</button>
         </form>
       </body>';
             $_SESSION["subitemAdded"] = false;
