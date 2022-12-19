@@ -113,7 +113,6 @@ if (checkCapability("manage_subitems")) {
                         while ($rowSubitem = mysqli_fetch_assoc($resultSubitem)) {
                             $queryValue = "SELECT value FROM value WHERE child_id =" . $rowChild["id"] . " AND subitem_id=" . $rowSubitem["id"];
                             $resultValue = mysqli_query($dbLink, $queryValue);
-
                             $subitemName = "<strong>" . $rowSubitem["name"] . "</strong> (";
                             $counter = 1;
                             if (mysqli_num_rows($resultValue) != 0) {

@@ -78,7 +78,7 @@ if (checkCapability("manage_subitems")) {
                     $firstLetters = substr($itemNameAccentless, 0, 3);
                     $subitemName_ASCI = preg_replace('/[^a-z0-9_ ]/i', '', $subitemName);
                     $subitemNameSpaceless = str_replace(" ", "_", $subitemName_ASCI);
-                    $formFieldName = $subitemNameSpaceless . "-" . $subitemId . "-" . $subitemNameSpaceless;
+                    $formFieldName = $firstLetters . "-" . $subitemId . "-" . $subitemNameSpaceless;
                     $queryFieldName = "UPDATE subitem SET form_field_name='$formFieldName' WHERE id=" . $subitemId;
                     if (!mysqli_query($dbLink, $queryFieldName)) {
                         echo '<div class="unsuccess warnings"><span>Erro: ' . $queryFieldName . '<br>' . mysqli_error($dbLink) . '</span></div>';
