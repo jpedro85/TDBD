@@ -1,6 +1,7 @@
 table {
-    text-align: center;
+    /*text-align: center;*/
     vertical-align: center;
+    /*table-layout: fixed;*/
 }
 
 .tableHead {
@@ -8,6 +9,13 @@ table {
     font-weight: bold;
     background-color: black;
     color: white;
+    text-align: center;
+}
+
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
 }
 
 .row1 {
@@ -60,7 +68,7 @@ table {
     font-weight: bold;
     color: white;
     background-color: black;
-    padding: 0.3em 0em 0.3em 0.8em;
+    padding: 0.3em 0 0.3em 0.8em;
     border-radius: 15px;
 }
 
@@ -112,7 +120,7 @@ table {
 #obg_main {
 
     font-size: 20px;
-    padding: 0.2em 0em 0.2em 1.5em;
+    padding: 0.2em 0 0.2em 1.5em;
 }
 
 #obg {
@@ -123,7 +131,7 @@ table {
 #suc_main {
     color: #197500;
     font-size: 20px;
-    padding: 0.2em 0em 0.2em 1.5em;
+    padding: 0.2em 0 0.2em 1.5em;
 }
 
 #suc {
@@ -137,14 +145,6 @@ table {
     font-size: 18px;
 }
 
-table {
-    table-layout: fixed;
-}
-td {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    word-wrap: break-word;
-}
 
 .continueButton {
     border-radius: 20px;
