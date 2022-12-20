@@ -2,7 +2,6 @@
 require_once("custom/php/common.php");
 reset_edicao_dados();
 
-echo 1;
 if (checkCapability("manage_records")) {
     if (!mysqli_select_db($dbLink, "bitnami_wordpress")) {
         die("Connection to DB failed: " . mysqli_connect_error());
@@ -157,8 +156,6 @@ if (checkCapability("manage_records")) {
                                                     <a href='" . $edicao_de_dados_page . "?estado=editar&tipo=resgisto$values" . "'>[Editar]</a> 
                                                     <a href=" . $edicao_de_dados_page . "?estado=apagar&tipo=resgisto$values" . "'>[Apagar]</a>";
                             if ($relatedDate) $dateInfo .= $dateProducer . " - <strong>" . $rowDateProducer["date"] . "</strong> (" . $rowDateProducer["producer"] . ") -" . $allDateInfo;
-                            if ($relatedDate) echo "<br>" . $itemName . " " . $dateProducer . " - <strong>" . $rowDateProducer["date"] . "</strong> (" . $rowDateProducer["producer"] . ") -";
-                            //if ($relatedDate) echo " || ".$dateInfo;
                         }
                         if ($done) $info .= $itemName . $dateInfo . "<br>";
                     }
