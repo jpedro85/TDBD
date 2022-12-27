@@ -7,7 +7,6 @@ if (checkCapability("manage_unit_types")) {
         $result = mysqli_query($myDB, $query);
         $subitem = "";
         $cor = "row2";
-        echo "<p>6</p>";
         echo '<table >
                   <tbody>
                         <tr class="tableHead">
@@ -54,7 +53,7 @@ if (checkCapability("manage_unit_types")) {
         <input type='text' name='nome' placeholder='Unidades'>
         <input type='hidden' name='estado' value='inserir'>
         <hr>
-        <input type='submit' name='submit' value='Inserir Item' >
+        <button type='submit' class='continueButton'>Inserir Item</button>
         </form>";
     } else if (isset($_REQUEST['estado']) && $_REQUEST['estado'] == 'inserir') {
         $myDB = connect();

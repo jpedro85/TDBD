@@ -6,14 +6,13 @@ if (checkCapability("insert_values")) {
         die("Connection failed:" . mysqli_connect_error());
     } else {//conecao feita
         if (!isset($_REQUEST['estado'])) {//nenhum estado inserido
-            echo "<p>21</p>";
             echo "<h3 class='form_input_title'>Inserção de valores - criança - procurar</h3>";
             echo "<form method='post' action=" . $current_page . ">
         <input type='text' name='nome' placeholder='Nome criança'>
         <input type='text' name='data' placeholder='AAAA-MM-DD'>
         <input type='hidden' name='estado' value='escolher_crianca'>
         <hr>
-        <input type='submit' name='submit' value='Procurar' >
+        <button type='submit' class='continueButton'>Procurar</button>
         </form>";
         } else if (isset($_REQUEST['estado']) && $_REQUEST['estado'] == 'escolher_crianca') {//primeiro estado de escolher crianca
             echo "<h3 class='form_input_title'>Inserção de valores - criança - escolher</h3>";
@@ -30,7 +29,7 @@ if (checkCapability("insert_values")) {
                         echo "<li><a href='insercao-de-valores?estado=escolher_item&crianca=" . $show['id'] . "'>[" . $show["name"] . "] (" . $show["birth_date"] . ")</a>";
                     }
                 } else {
-                    //adicionar echo de nao ter criancas
+                    echo "<p id='obg_main'><span id='obg'>Não foi encontrada nenhuma crianca com essas características</span></p>";
                 }
             } else if (!empty($data) && empty($name)) {//data e nao tem nome preenchido
                 $query1 = 'SELECT child.name,child.birth_date,child.id FROM child WHERE child.birth_date like "%' . $data . '%"';
@@ -40,10 +39,10 @@ if (checkCapability("insert_values")) {
                         echo "<li><a href='insercao-de-valores?estado=escolher_item&crianca=" . $show['id'] . "'>[" . $show["name"] . "] (" . $show["birth_date"] . ")</a>";
                     }
                 } else {
-                    //adicionar echo de nao ter criancas
+                    echo "<p id='obg_main'><span id='obg'>Não foi encontrada nenhuma crianca com essas características</span></p>";
                 }
             } else {
-                //adicionar echo de nao ter criancas
+                echo "<p id='obg_main'><span id='obg'>Não foi encontrada nenhuma crianca com essas características</span></p>";
             }
         } else if (isset($_REQUEST['estado']) && $_REQUEST['estado'] == 'escolher_item') {//segundo estado de escolher o item
             echo "<h3 class='form_input_title'>Inserção de valores - criança - escolher item</h3>";
@@ -72,119 +71,271 @@ if (checkCapability("insert_values")) {
             $_SESSION["item_name"] = $result1["name"];
             $_SESSION["item_type_id"] = $result1["item_type_id"];
             echo "<h3 class='form_input_title'>Inserção de valores - " . $_SESSION["item_name"] . "</h3>";
-            /*$form = sprintf("item_type_%d_item_%d", $_SESSION["item_type_id"], $_SESSION["item_id"]);
-            $action = $current_page."?estado=validar&item=" .$_SESSION["item_id"];
-            $query2 = "SELECT * from subitem WHERE subitem.item_id=" . $_SESSION["item_id"] . " AND state='active' ORDER BY form_field_order";
+            $form = sprintf("item_type_%d_item_%d", $_SESSION["item_type_id"], $_SESSION["item_id"]);
+            $action = $current_page . "?estado=validar&item=" . $_SESSION["item_id"];
+            $query2 = "SELECT * from subitem WHERE item_id=" . $_SESSION["item_id"] . " AND state='active' ORDER BY form_field_order";
             $result2 = mysqli_query($myDB, $query2);
-            $ID = 0;
-            echo "<form method='post' name='$form' action='$action'>";
-            while ($show = mysqli_fetch_assoc($result2)) {
-                $add = $show["unit_type_id"];
-                $input = $show["form_field_name"];
-                $Input = "";
-                switch ($show["value_type"]) {
-                    case"text"://Caso seja TEXT
-                        $Input .= "<span><strong>" . $show["name"] . "</strong></span>" . ($show["mandatory"] == 1 ? "<span>*</span>" : "") . "<br>";//Criacao da label
-                        if ($show["form_field_type"] == "text") {
-                            $Input .= "<input name='$input' type='text'  class='textInput'" . ($show["mandatory"] == 1 ? " id='$ID'" : "") . ">";
-                        } else {
-                            $Input .= "<textarea class='textArea' name='$input' rows='5' cols='50'" . ($show["mandatory"] == 1 ? " id='$ID'" : "") . "></textarea>";
-                        }
-                        break;
-                    case"bool":
-                        //caso booleano
-                        $Input .= "<span><strong>" . $show["name"] . "</strong></span>" . ($show["mandatory"] == 1 ? "<span>*</span>" : "") . "<br>";
-                        $Input .= "<input name='$input' type='radio' value='verdadeiro'><span>Verdadeiro</span>";
-                        if ($add) {
-                            $query4 = "SELECT name from subitem_unit_type WHERE id=" . $show["unit_type_id"];
-                            $result4 = mysqli_fetch_assoc(mysqli_query($myDB, $query4));
-                            $Input .= "<span> " . $result4["name"] . "</span>";
-                        }
-                        $Input .= "<br><input name='$input' type='radio' value='falso'><span class='textoLabels'>Falso</span>";
-                        if ($add) {
-                            $query4 = "SELECT name from subitem_unit_type WHERE id=" . $show["unit_type_id"];
-                            $result4 = mysqli_fetch_assoc(mysqli_query($myDB, $query4));
-                            $Input .= "<span> " . $result4["name"] . "</span>";
-                        }
-                        break;
-                    case"double":
-                    case"int":
-                        //caso double e int
-                        $Input .= "<span><strong>" . $show["name"] . "</strong></span>" . ($show["mandatory"] == 1 ? "<span>*</span>" : "") . "<br>";
-                        $Input .= "<input name='$input' type='text' class='textInput'" . ($show["mandatory"] == 1 ? " id='$ID'" : "") . ">";
-                        if ($add) {
-                            $query4 = "SELECT name from subitem_unit_type WHERE id=" . $show["unit_type_id"];
-                            $result4 = mysqli_fetch_assoc(mysqli_query($myDB, $query4));
-                            $Input .= "<span> " . $result4["name"] . "</span>";
-                        }
-                        break;
-                    case"enum":
-                        $isSelectBox = $show["form_field_type"] == "selectbox";
-                        $index = 0;
-                        $query = "SELECT value from subitem_allowed_value WHERE subitem_id=" . $show["id"] . " AND state='active'";
-                        $valoresPermitidos = mysqli_query($myDB, $query);
-                        if (mysqli_num_rows($valoresPermitidos) > 0) {
-                            $Input .= "<span><strong>" . $show["name"] . "</strong></span>" . ($show["mandatory"] == 1 ? "<span>*</span>" : "") . "<br>";
-                            if ($isSelectBox) {
-                                $Input .= "<select name='$input'" . ($show["mandatory"] == 1 ? " id='$ID'" : "") . " class='textInput textoLabels'>";
-                                $Input .= "<option value='empty'>Selecione um valor</option>";
-                            } else {
-                                $Input .= "<input name='$input";
-                                if ($show["form_field_type"] == "radio") {
-                                    $Input .= "'";
-                                    $Input .= " checked ";
-                                } else {
-                                    $Input .= "_$index'";
-                                }
+            $contador=0;
+            echo "<form method='post' action=" . $current_page . ">";
+            while ($subItem = mysqli_fetch_assoc($result2)) {
+                $obrigatorio= $subItem["mandatory"];
+                $addUnidades= $subItem["unit_type_id"]!=null;
+                $nomedocampo="campo".$contador;
+                $nomedocampotipo=$nomedocampo."tipo";
+                $nomedocampomandatorio=$nomedocampo."mandatorio";
+                $campoid=$nomedocampo."id";
+                switch ($subItem["value_type"]) {
+                    case "text":
+                        echo "<h3 class='form_input_title'>" . $subItem["name"] . ($obrigatorio == 1 ? "*</h3>" : "</h3>");
+                        if ($subItem["form_field_type"] == "text") {//text text
+                            echo "<h3>texto</h3>";
+                            if($addUnidades){
+                                $query5 = "SELECT name from subitem_unit_type WHERE id=" . $subItem["unit_type_id"];
+                                $unidades = mysqli_fetch_assoc(mysqli_query($myDB, $query5));
+                                echo "<input name='$nomedocampo' type='text' placeholder='".$unidades["name"]."'>";//com unidades no placeholder
+                                echo "<input type='hidden' name='$nomedocampotipo' value='texto'>";
+                                echo "<input type='hidden' name='$nomedocampomandatorio' value='".($obrigatorio==1)."'>";
+                                echo "<input type='hidden' name='$campoid' value='".$subItem["id"]."'>";
+                                echo "<input type='hidden' name='$campoid"."Nome"."' value='".$subItem["name"]."'>";
+                                $contador++;
                             }
-                            while ($valor = mysqli_fetch_assoc($valoresPermitidos)) {
-                                if ($isSelectBox) {
-                                    $Input .= "<option value='" . $valor["value"] . "'>" . $valor["value"] . "</option>";
-                                } else {
-                                    $Input .= " type='" . $show["form_field_type"] . "' value='" . $valor["value"] . "'" . ($show["mandatory"] == 1 ? " id='$ID'" : "") . "><span>" . $valor["value"] . "</span>";
-                                    if ($add) {
-                                        $query = "SELECT name from subitem_unit_type WHERE id=" . $show["unit_type_id"];
-                                        $unidade = mysqli_fetch_assoc(mysqli_query($myDB, $query));
-                                        $Input .= "<span> " . $unidade["name"] . "</span>";
-                                    }
-                                    $Input .= "<br>";
-                                }
-                                $index++;
-                                if ($index < mysqli_num_rows($valoresPermitidos) && !$isSelectBox) {
-                                    $Input .= "<input name='$input";
-                                    if ($show["form_field_type"] == "checkbox") {
-                                        $Input .= "_$index";
-                                    }
-                                    $Input .= "'";
-                                }
+                            else{
+                                echo "<input name='$nomedocampo' type='text' placeholder='sem unidades'>";//sem unidades no placeholder
+                                echo "<input type='hidden' name='$nomedocampotipo' value='texto'>";
+                                echo "<input type='hidden' name='$nomedocampomandatorio' value='".($obrigatorio==1)."'>";
+                                echo "<input type='hidden' name='$campoid' value='".$subItem["id"]."'>";
+                                echo "<input type='hidden' name='$campoid"."Nome"."' value='".$subItem["name"]."'>";
+                                $contador++;
                             }
-                            if ($isSelectBox) {
-                                $Input .= "</select>";
-                                if ($add) {
-                                    $query = "SELECT name from subitem_unit_type WHERE id=" . $show["unit_type_id"];
-                                    $unidade = mysqli_fetch_assoc(mysqli_query($myDB, $query));
-                                    $Input .= "<span> " . $unidade["name"] . "</span>";
+                        } else {//text textbox
+                            if($addUnidades){
+                                $query5 = "SELECT name from subitem_unit_type WHERE id=" . $subItem["unit_type_id"];
+                                $unidades = mysqli_fetch_assoc(mysqli_query($myDB, $query5));
+                                echo "<textarea class='textArea' name='$nomedocampo' rows='5' cols'50' placeholder='".$unidades["name"]."'></textarea>";//com unidades no placeholder
+                                echo "<input type='hidden' name='$nomedocampotipo' value='texto'>";
+                                echo "<input type='hidden' name='$nomedocampomandatorio' value='".($obrigatorio==1)."'>";
+                                echo "<input type='hidden' name='$campoid' value='".$subItem["id"]."'>";
+                                echo "<input type='hidden' name='$campoid"."Nome"."' value='".$subItem["name"]."'>";
+                                $contador++;
+                            }
+                            else{
+                                echo "<textarea class='textArea' name='$nomedocampo' rows='5' cols='50' placeholder='sem unidades'></textarea>";//sem unidades no placeholder
+                                echo "<input type='hidden' name='$nomedocampotipo' value='texto'>";
+                                echo "<input type='hidden' name='$nomedocampomandatorio' value='".($obrigatorio==1)."'>";
+                                echo "<input type='hidden' name='$campoid' value='".$subItem["id"]."'>";
+                                echo "<input type='hidden' name='$campoid"."Nome"."' value='".$subItem["name"]."'>";
+                                $contador++;
+                            }
+                        }
+                        break;
+                    case "bool"://bool
+                        echo "<h3 class='form_input_title'>" . $subItem["name"] . ($obrigatorio == 1 ? "*</h3>" : "</h3>");
+                        echo "<input name='$nomedocampo' id='rbool1' type='radio' checked value='1'><label for='rbool1'>Verdadeiro</label>";//bool verdadeiro
+                        echo "<input name='$nomedocampo' id='rbool2' type='radio' value='0'><label for='rbool2'>Falso</label>";//bool falso
+                        echo "<input type='hidden' name='$nomedocampotipo' value='radiobool'>";
+                        echo "<input type='hidden' name='$nomedocampomandatorio' value='".($obrigatorio==1)."'>";
+                        echo "<input type='hidden' name='$campoid' value='".$subItem["id"]."'>";
+                        echo "<input type='hidden' name='$campoid"."Nome"."' value='".$subItem["name"]."'>";
+                        $contador++;
+                        break;
+                    case "double":
+                    case "int":
+                        echo "<h3 class='form_input_title'>" . $subItem["name"] . ($obrigatorio == 1 ? "*</h3>" : "</h3>");
+                        if ($subItem["form_field_type"] == "text") {//int/double text
+                            if($addUnidades){
+                                $query5 = "SELECT name from subitem_unit_type WHERE id=" . $subItem["unit_type_id"];
+                                $unidades = mysqli_fetch_assoc(mysqli_query($myDB, $query5));
+                                echo "<input name='$nomedocampo' type='text' placeholder='".$unidades["name"]."'>";//com unidades no placeholder
+                                echo "<input type='hidden' name='$nomedocampotipo' value='numerico'>";
+                                echo "<input type='hidden' name='$nomedocampomandatorio' value='".($obrigatorio==1)."'>";
+                                echo "<input type='hidden' name='$campoid' value='".$subItem["id"]."'>";
+                                echo "<input type='hidden' name='$campoid"."Nome"."' value='".$subItem["name"]."'>";
+                                $contador++;
+                            }
+                            else{
+                                echo "<input name='$nomedocampo' type='text' placeholder='sem unidades'>";//sem unidades no placeholder
+                                echo "<input type='hidden' name='$nomedocampotipo' value='numerico'>";
+                                echo "<input type='hidden' name='$nomedocampomandatorio' value='".($obrigatorio==1)."'>";
+                                echo "<input type='hidden' name='$campoid' value='".$subItem["id"]."'>";
+                                echo "<input type='hidden' name='$campoid"."Nome"."' value='".$subItem["name"]."'>";
+                                $contador++;
+                            }
+                        }
+                        break;
+                    case "enum":
+                        $query3 = "SELECT value from subitem_allowed_value WHERE subitem_id=" . $subItem["id"] . " AND state='active'";
+                        $result3 = mysqli_query($myDB, $query3);
+                        if (mysqli_num_rows($result3) > 0) {
+                            echo "<h3 class='form_input_title'>" . $subItem["name"] . ($obrigatorio == 1 ? "*</h3>" : "</h3>");
+                            if ($subItem["form_field_type"] == "selectbox") {//enum selectbox
+                                echo "<select name='$nomedocampo'>";
+                                echo "<option value='empty'>Selecione um valor</option>";
+                                while ($valor = mysqli_fetch_assoc($result3)) {
+                                    echo "<option value='" . $valor["value"] . "'>" . $valor["value"] . "</option>";
+                                    echo "<br>";
                                 }
+                                echo "</select>";
+                                echo "<input type='hidden' name='$nomedocampotipo' value='selectbox'>";
+                                echo "<input type='hidden' name='$nomedocampomandatorio' value='".($obrigatorio==1)."'>";
+                                echo "<input type='hidden' name='$campoid' value='".$subItem["id"]."'>";
+                                echo "<input type='hidden' name='$campoid"."Nome"."' value='".$subItem["name"]."'>";
+                                $contador++;
+                            } elseif ($subItem["form_field_type"] == "checkbox") {//enum checkbox
+                                $contador2=0;
+
+                                while ($valor = mysqli_fetch_assoc($result3)) {
+                                    $nomedocampov2=$nomedocampo."_".$contador2;
+                                    echo "<input type='checkbox' name='$nomedocampov2' value='".$valor["value"]."'>";
+                                    echo "<label>" . $valor["value"] . "</label><br>";
+                                    $contador2++;
+                                }
+                                echo "<input type='hidden' name='$nomedocampotipo' value='checkbox'>";
+                                echo "<input type='hidden' name='$nomedocampomandatorio' value='".($obrigatorio==1)."'>";
+                                echo "<input type='hidden' name='$campoid' value='".$subItem["id"]."'>";
+                                echo "<input type='hidden' name='$campoid"."Nome"."' value='".$subItem["name"]."'>";
+                                echo "<input type='hidden' name='$campoid"."Numero"."' value='$contador2'>";//
+                                $contador++;
+                            } else {//enum radio
+                                $id = 0;
+                                while ($valor = mysqli_fetch_assoc($result3)) {
+                                    $nomeId = $nomedocampo . $id;
+                                    echo "<input name='$nomedocampo' type='radio' value='".$valor["value"]."' >";
+                                    echo "<label>" . $valor["value"] . "</label>";
+                                    echo "<br>";
+                                    $id++;
+                                }
+                                echo "<input type='hidden' name='$nomedocampotipo' value='radioenum'>";
+                                echo "<input type='hidden' name='$nomedocampomandatorio' value='".($obrigatorio==1)."'>";
+                                echo "<input type='hidden' name='$campoid' value='".$subItem["id"]."'>";
+                                echo "<input type='hidden' name='$campoid"."Nome"."' value='".$subItem["name"]."'>";
+                                $contador++;
                             }
                         }
                         break;
                 }
-                echo $Input . "<br>";
-                if ($show["mandatory"] == 1) {
-                    $ID++;
-                }
+                //echo "<input type='hidden' name='$campoid' value='".$subItem["id"]."'>";
+                //echo "<input type='hidden' name='$campoid"."Nome"."' value='".$subItem["name"]."'>";
+                //$contador++;
             }
             echo "<input type='hidden' name='estado' value='validar'><hr>";
-            echo "<input type='submit' name='submit' value='validar' >";
-            echo "</form>";*/
-        }elseif(isset($_REQUEST['estado']) && $_REQUEST['estado'] == 'validar'){
-            echo "<h3 class='form_input_title'>Inserção de valores - validar</h3>";
+            //echo "<input type='submit' name='submit' value='validar' >";
+            echo "<button type='submit' class='continueButton'>Validar</button>";
+            echo "</form>";
+        } elseif (isset($_REQUEST['estado']) && $_REQUEST['estado'] == 'validar') {//quarto estado validar
+            echo "<h3 class='form_input_title'>Inserção de valores - " . $_SESSION["item_name"] . " - validar</h3>";
+            $contador=0;
+            $valido=true;
+            $list="<ul>";
+            $listcorreta="<ul>";
+            $action = $current_page . "?estado=inserir&item=" . $_SESSION["item_id"];
+            echo"<form method='post' action='$action'>";
+            while(isset($_REQUEST["campo$contador"."id"])){
+                $nomedocampo="campo".$contador;
+                $nomedocampotipo=$nomedocampo."tipo";
+                $nomedocampomandatorio=$nomedocampo."mandatorio";
+                echo "<input type='hidden' name='"."campo$contador"."id"."' value='".$_REQUEST["campo$contador"."id"]."'>";
+                echo "<input type='hidden' name='$nomedocampotipo' value='".$_REQUEST[$nomedocampotipo]."'>";
+                echo "<input type='hidden' name='$nomedocampomandatorio' value='".$_REQUEST[$nomedocampomandatorio]."'>";
+                switch ($_REQUEST[$nomedocampotipo]){
+                    case "texto":
+                        if($_REQUEST[$nomedocampomandatorio]==1 &&empty($_REQUEST[$nomedocampo])){
+                            $valido=false;
+                            $list.="<li class='warning_list'>".$_REQUEST["campo$contador"."idNome"]."</li>";
+                        }else{
+                            $listcorreta.="<li class='warning_list'>".$_REQUEST["campo$contador"."idNome"].":".$_REQUEST[$nomedocampo]."</li>";
+                            echo "<input type='hidden' name='$nomedocampo' value='".$_REQUEST[$nomedocampo]."'>";
+                        }
+                        break;
+                    case "radiobool":
+                        if($_REQUEST[$nomedocampomandatorio]==1 && !isset($_REQUEST[$nomedocampo])){//radiobool
+                            $valido=false;
+                            $list.="<li class='warning_list'>".$_REQUEST["campo$contador"."idNome"]."</li>";
+                        }else{
+                            $listcorreta.="<li class='warning_list'>".$_REQUEST["campo$contador"."idNome"].":".$_REQUEST[$nomedocampo]."</li>";
+                            echo "<input type='hidden' name='$nomedocampo' value='".$_REQUEST[$nomedocampo]."'>";
+                        }
+                        break;
+                    case "numerico":
+                        if($_REQUEST[$nomedocampomandatorio]==1 &&(empty($_REQUEST[$nomedocampo])|| !is_numeric($_REQUEST[$nomedocampo]))){
+                            $valido=false;
+                            $list.="<li class='warning_list'>".$_REQUEST["campo$contador"."idNome"]."</li>";
+                        }else{
+                            $listcorreta.="<li class='warning_list'>".$_REQUEST["campo$contador"."idNome"].":".$_REQUEST[$nomedocampo]."</li>";
+                            echo "<input type='hidden' name='$nomedocampo' value='".$_REQUEST[$nomedocampo]."'>";
+                        }
+                        break;
+                    case "selectbox":
+                        if(($_REQUEST[$nomedocampomandatorio]==1) && ($_REQUEST[$nomedocampo]=="empty")){
+                            $valido=false;
+                            $list.="<li class='warning_list'>".$_REQUEST["campo$contador"."idNome"]."</li>";
+                        }else{
+                            $listcorreta.="<li class='warning_list'>".$_REQUEST["campo$contador"."idNome"].":".$_REQUEST[$nomedocampo]."</li>";
+                            echo "<input type='hidden' name='$nomedocampo' value='".$_REQUEST[$nomedocampo]."'>";
+                        }
+                        break;
+                    case "checkbox":
+                        if($_REQUEST[$nomedocampomandatorio]==1){
+                            $selecionado=false;
+                            echo "<input type='hidden' name='"."campo$contador"."idNumero"."' value='".$_REQUEST["campo$contador"."idNumero"]."'>";
+                            for ($contador2=0;$contador2<$_REQUEST["campo$contador"."idNumero"];$contador2++){
+                                if(isset($_REQUEST[$nomedocampo."_".$contador2])){
+                                    $selecionado=true;
+                                    $listcorreta.="<li class='warning_list'>".$_REQUEST["campo$contador"."idNome"].":".$_REQUEST[$nomedocampo."_".$contador2]."</li>";
+                                    echo "<input type='hidden' name='$nomedocampo' value='".$_REQUEST[$nomedocampo."_".$contador2]."'>";
+                                }
+                            }
+                            if(!$selecionado){
+                                $valido=false;
+                                $list.="<li class='warning_list'>".$_REQUEST["campo$contador"."idNome"]."</li>";
+                            }
+                        }
+                        break;
+                    case "radioenum":
+                        if($_REQUEST[$nomedocampomandatorio]==1 && !isset($_REQUEST[$nomedocampo])){//radioenum
+                            $valido=false;
+                            $list.="<li class='warning_list'>".$_REQUEST["campo$contador"."idNome"]."</li>";
+                        }else{
+                            $listcorreta.="<li class='warning_list'>".$_REQUEST["campo$contador"."idNome"].":".$_REQUEST[$nomedocampo]."</li>";
+                            echo "<input type='hidden' name='$nomedocampo' value='".$_REQUEST[$nomedocampo]."'>";
+                        }
+                        break;
+                }
+                $contador++;
+            }
+            if(!$valido){
+                echo "<div class='unsuccess'><p id='obg_main'>Os Campos seguintes <span id='obg'>sao obrigatorios</span> ou <span id='obg'>nao</span> estao preenchidos <span id='obg'>corretamente:</span></p>";
+                echo $list;
+                echo "</ul><br></div>";
+                voltar_atraz();
+            }
+            else{
+                echo "<div class='success'><p id='suc_main'>A Validacao<span id='suc'> foi</span> concluida <span id='suc'></span> com <span id='suc'>Sucesso:</span></p>";
+                echo $listcorreta;
+                echo "</ul><br></div><br>";
+                echo "<div class='question'><p class='obg_main'>deseja continuar?</p></div>";
+                echo "<button type='submit' class='continueButton'>Submeter</button>";
+            }
+            echo "</form>";
+        } elseif (isset($_REQUEST['estado']) && $_REQUEST['estado'] == 'inserir') {//quinto estado inserir
+            echo "<h3 class='form_input_title'>Inserção de valores - " . $_SESSION["item_name"] . " - inserir</h3>";
+            $contador=0;
+            $queryErrors=false;
+            while(isset($_REQUEST["campo$contador"."id"])){
+                $nomedocampo="campo".$contador;
+                $query= 'INSERT INTO `value` (child_id,subitem_id,value,date,time,producer) VALUES ('.$_SESSION['child_id'].','.$_REQUEST["campo$contador"."id"].',"'.$_REQUEST[$nomedocampo].'","'.date("Y-m-d").'","'.date("H:i:s").'", "'.WP_get_current_user()->user_login.'")';
+                if (!mysqli_query($myDB, $query)) {
+                    echo '<div class="unsuccess warnings"><span>Erro: ' . $query . '<br>' . mysqli_error($myDB) . '</span></div>';
+                    $queryErrors = true;
+                }
+                $contador++;
+            }if(!$queryErrors){
+                echo "<div class='success'><p id='suc_main'>Inseriu os dados de registo com sucesso.<br>Clique em <span id='suc'>Continuar</span> para avançar.</p></div>
+                      <a href='$current_page' ><button class='continueButton' >Voltar</button></a>
+                      <a href='$current_page.?estado=escolher_item&crianca=".$_SESSION["child_id"]."' ><button class='continueButton' >Escolher item</button></a>";
 
-        }elseif(isset($_REQUEST['estado']) && $_REQUEST['estado'] == 'inserir'){
-            echo "<h3 class='form_input_title'>Inserção de valores - inserir</h3>";
-        }
-        else {
-            //outro estado
+            }
+        } else {
+            echo "<h3 class='form_input_title'>Outro estado</h3>";
         }
     }
 } else {

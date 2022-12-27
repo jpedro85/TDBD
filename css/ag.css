@@ -1,8 +1,21 @@
+table {
+    /*text-align: center;*/
+    vertical-align: center;
+    /*table-layout: fixed;*/
+}
+
 .tableHead {
     font-size: 25px;
     font-weight: bold;
     background-color: black;
     color: white;
+    text-align: center;
+}
+
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
 }
 
 .row1 {
@@ -45,7 +58,8 @@
     font-weight: bold;
     color: white;
     background-color: black;
-    padding: 0.15em 0.3em 0.15em 0.3em;
+    text-align: center;
+    /*padding: 0.15em 0.3em 0.15em 0.3em;*/
     border-radius: 25px;
 }
 
@@ -54,7 +68,7 @@
     font-weight: bold;
     color: white;
     background-color: black;
-    padding: 0.3em 0em 0.3em 0.4em;
+    padding: 0.3em 0 0.3em 0.8em;
     border-radius: 15px;
 }
 
@@ -63,18 +77,19 @@
         transform: translate(0, 100px);
     }
     to {
-        transform: translate(0, -20px);
+        transform: translate(0, 0px);
         background-position: center;
     }
 
 }
 
-.success {
+.question {
 
     width: 100%;
     height: 25%;
-    border-radius: 20px;
-    background-color: #b4fca3;
+    border-radius: 25px;
+    border: 1px solid #074479;
+    background-color: #66c4e0;
     animation-name: animation1;
     animation-duration: 0.5s;
     animation-fill-mode: forwards;
@@ -82,7 +97,21 @@
 
 }
 
+.success {
+
+    width: 100%;
+    height: 25%;
+    border-radius: 25px;
+    border: 1px solid seagreen;
+    background-color: #b4fca3;
+    animation-name: animation1;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+    text-align-all: center;
+}
+
 .unsuccess {
+
     width: 100%;
     height: 25%;
     border-radius: 25px;
@@ -92,7 +121,6 @@
     animation-duration: 0.5s;
     animation-fill-mode: forwards;
     text-align-all: center;
-    margin-top: 4em;
 }
 
 
@@ -100,14 +128,13 @@
 .warning_list {
 
     color: #a40101;
-    padding-top: -20px;
-    margin-left: 30px;
+    margin-left: 60px;
 }
 
 #obg_main {
 
     font-size: 20px;
-    padding: 0.2em 0em 0.2em 1.5em;
+    padding: 0.2em 0 0.2em 1.5em;
 }
 
 #obg {
@@ -118,7 +145,7 @@
 #suc_main {
     color: #197500;
     font-size: 20px;
-    padding: 0.2em 0em 0.2em 1.5em;
+    padding: 0.2em 0 0.2em 1.5em;
 }
 
 #suc {
@@ -132,14 +159,6 @@
     font-size: 18px;
 }
 
-table {
-    table-layout: fixed;
-}
-td {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    word-wrap: break-word;
-}
 
 .continueButton {
     border-radius: 20px;

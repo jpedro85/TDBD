@@ -1,16 +1,16 @@
 <?php
 require_once("custom/php/common.php");
 //gestao de itens
-//echo "162 <br>";
-//verificação cliente side
-//transactions
-//check de capabilities
+echo "190 <br>";
+//check de capabilitie
+
+reset_edicao_dados();
 if( checkCapability("manage_items") ) {
 
     if (!isset($_REQUEST["estado"])) {
 
-        $mysqli = connect();
-        $result_item_type = mysqli_query($mysqli, "SELECT item_type.* FROM item_type");
+       // $mysqli = connect();
+        $result_item_type = mysqli_query($dbLink, "SELECT item_type.* FROM item_type");
         //variaveis para as cores das linhas da tablela
         $type = 'row2';
         $type2 = 'row2';
@@ -25,139 +25,147 @@ if( checkCapability("manage_items") ) {
                 <td>Ação </b> </td>.                    
             </tr>";
 
-        //loop por todos os tipos de items
-        while ($array = mysqli_fetch_assoc($result_item_type)) {
+        if ( mysqli_num_rows($result_item_type) != 0) {
 
-            //alernar a cor da linha
-            $type = switchBackground($type);
+            //loop por todos os tipos de items
+            while ($array = mysqli_fetch_assoc($result_item_type)) {
 
-            //query para conseguir todos os items de cada tipo
-            $query = mysqli_query($mysqli, "SELECT * FROM item WHERE item.item_type_id=" . $array["id"] . " ORDER BY name");
+                //alernar a cor da linha
+                $type = switchBackground($type);
 
-            //primeira coluna
-            echo "<tr><td class=$type rowspan=$query->num_rows>" . $array["name"] . "</td>";//col1
+                //query para conseguir todos os items de cada tipo
+                $query = mysqli_query($dbLink, "SELECT * FROM item WHERE item.item_type_id=" . $array["id"] . " ORDER BY name");
 
-            //se existe items daquele tipo
-            if ($query->num_rows != 0) {
-                //loop pelos items
-                while ($row2 = mysqli_fetch_assoc($query)) {
+                //primeira coluna
+                echo "<tr><td class=$type rowspan=".( mysqli_num_rows($query) == 0 ? 1: mysqli_num_rows($query)) .">" . $array["name"] . "</td>";//col1
 
-                    $type2 = switchBackground($type2);
+                //se existe items daquele tipo
+                if (mysqli_num_rows($query) != 0) {
+                    //loop pelos items
+                    while ($row2 = mysqli_fetch_assoc($query)) {
 
-                    echo "<td class=$type2>" . $row2["id"] . "</td>" .
-                        "<td class=$type2>" . $row2["name"] . "</td>" .
-                        "<td class=$type2>" . $row2["state"] . "</td>";
+                        $type2 = switchBackground($type2);
 
-                    if($array["name"]=="dado_de_crianca"){
+                        echo "<td class=$type2>" . $row2["id"] . "</td>" .
+                            "<td class=$type2>" . $row2["name"] . "</td>" .
+                            "<td class=$type2>" . $row2["state"] . "</td>";
 
-                        switch ($row2["state"]) {
-                            case "active":
-                                echo "<td class=$type2>[Editar] [Desativar] [Apagar]</td>";
-                                break;
-                            case "inactive":
-                                echo "<td class=$type2>[Editar] [Ativar] [Apagar]</td>";
-                                break;
-                            default:
-                                echo "<td class=$type2>[Editar] [Apagar]</td>";
-                                break;
-                        }
-                        echo "</tr>";
+                        //if ($array["name"] == "dado_de_crianca") {
 
-                    }else{
-
-                        switch ($row2["state"]) {
-                            case "active":
-                                echo "<td class=$type2>[Editar] [Desativar] </td>";
-                                break;
-                            case "inactive":
-                                echo "<td class=$type2>[Editar] [Ativar] </td>";
-                                break;
-                            default:
-                                echo "<td class=$type2>[Editar] [Apagar]</td>";
-                                break;
-                        }
-                        echo "</tr>";
+                            switch ($row2["state"]) {
+                                case "active":
+                                    echo"<td class=$type2>
+                                            <a href=".$edicao_de_dados_page.'?estado=editar&tipo=item&id='.$row2["id"].">[Editar]</a>  
+                                            <a href=".$edicao_de_dados_page.'?estado=desativar&tipo=item&id='.$row2["id"].">[Desativar]</a>  
+                                            <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=item&id='.$row2["id"].">[Apagar]</a>  
+                                        </td>";
+                                    break;
+                                case "inactive":
+                                    echo "<td class=$type2>
+                                            <a href=".$edicao_de_dados_page.'?estado=editar&tipo=item&id='.$row2["id"].">[Editar]</a>  
+                                            <a href=".$edicao_de_dados_page.'?estado=ativar&tipo=item&id='.$row2["id"].">[Ativar]</a>  
+                                            <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=item&id='.$row2["id"].">[Apagar]</a>
+                                        </td>";
+                                    break;
+                                default:
+                                    echo "<td class=$type2>
+                                            <a href=".$edicao_de_dados_page.'?estado=editar&tipo=item&id='.$row2["id"].">[Editar]</a>  
+                                            <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=item&id='.$row2["id"].">[Apagar]</a>
+                                        </td>";
+                                    break;
+                            }
+                            echo "</tr>";
 
                     }
 
+                } else {
+                    //rowspan e texto "sem items relacionados"
+                    $type2 = switchBackground($type2);
+                    echo "<td class=$type2  colspan=4>Sem items relacionados</td></tr>";
                 }
-
-            } else {
-                //rowspan e texto "sem items relacionados"
-                $type2 = switchBackground($type2);
-                echo "<td class=$type2  colspan=4>Sem items relacionados</td></tr>";
             }
+            echo "</table>";
+
+            //parte de inserção de evalores
+            echo "<h3 class='sub_title'>Gestão de itens - introdução</h3>
+            <p class='form_input_title'>Nome do item</p>
+            <form method='post' action=" . $current_page . ">
+            <input type='text' placeholder='Nome' name='nome'>
+            <p class='form_input_title'>Tipo</p>";
+
+                //query para os obter os nomes dos tipos
+                $result_item_type = mysqli_query($dbLink, "SELECT name,item_type.id FROM item_type");
+                //criar a lista de radiobuttons tipos de items
+
+                echo "<ul>";
+                while ($row = mysqli_fetch_assoc($result_item_type)) {
+                    echo "<li>
+                        <input type='radio' id='radio_type_'" . $row["name"] . " name='radio_type' value=" . $row["id"] . "> 
+                        <label for='radio_type_'" . $row["name"] . ">" . $row["name"] . "</label>
+                      <br>
+                      </li>";
+                }
+                echo "</ul>";
+
+                //criar a lista de radiobuttons dos estados
+                echo "<p class='form_input_title'>Estado</p>
+            <ul>
+                <li> 
+                    <input type='radio' id='rad_state_active' name='rad_state' value='Active'>
+                    <label for='rad_state_active'>Active</label><br> 
+                </li>   
+                <li>
+                    <input type='radio' id='rad_state_inactive' name='rad_state' value='Inactive'>  
+                    <label for='rad_state_inactive'>Inactive</label><br>
+                </li>
+            </ul>
+            <input type='hidden' name='estado' value='inserir'>
+            <hr>
+            <button type='submit' class='continueButton'>Inserir Item</button>
+            <!--<input type='submit' name='submit' value='Inserir Item' > -->
+            </form>";
+
+            $_SESSION["Item_added"]=false;
+
+        //caso não exista items
+        } else {
+
+            echo "<tr>
+                    <td colspan=5 class='row1'>Não há tipos de items</td>
+                  </tr>
+                  </table>";
         }
-        echo "</table>";
-
-        //parte de inserção de evalores
-        echo "<h3 class='sub_title'>Gestão de itens - introdução</h3>
-        <form method='post' action=" . $current_page . ">
-        <input type='text' placeholder='Nome' name='nome'>
-        <p class='form_input_title'>Tpo</p>";
-
-        //query para os obter os nomes dos tipos
-        $result_item_type = mysqli_query($mysqli, "SELECT name FROM item_type");
-        //criar a lista de radiobuttons tipos de items
-        while ($row = mysqli_fetch_assoc($result_item_type)) {
-            echo "<input type='radio' id='radio_type_'" . $row["name"] . " name='radio_type' value=" . $row["name"] . "> 
-        <label for='radio_type_'" . $row["name"] . ">" . $row["name"] . "</label>
-        <br>";
-
-        }
-        //criar a lista de radiobuttons dos estados
-        echo "<p class='form_input_title'>Estado</p>
-        <input type='radio' id='rad_state_active' name='rad_state' value='Active'>
-        <label for='rad_state_active'>Active</label><br>
-        <input type='radio' id='rad_state_inactive' name='rad_state' value='Inactive'>
-        <label for='rad_state_inactive'>Inactive</label><br>
-        <input type='hidden' name='estado' value='inserir'>
-        <hr>
-        <input type='submit' name='submit' value='Inserir Item' >
-        </form>";
-
-        $_SESSION["Item_added"]=false;
 
 //se ja existir um submit mostra o resultado de tentar adicionar
 } else if ($_REQUEST["estado"] == 'inserir') {
 
-        $mysqli = connect();
+       // $mysqli = connect();
         echo "<h3 class='sub_title'>Gestão de itens - Inserção</h3>";
 
         //verificar o campo nome se está vazio
-        if (isset($_REQUEST["nome"]) && $_REQUEST["nome"] != "")
-            $request_text = true;
-        else {
-            $request_text = false;
+        $valid_form = true;
+        if ( empty($_REQUEST["nome"]) ) {
+            $valid_form = false;
             $list["nome"] = 'Nome';
         }
         //verificar o campo state se foi escolhido
-        if (isset($_REQUEST["rad_state"]))
-            $request_rad_state = true;
-        else {
-            $request_rad_state = false;
+        if (!isset($_REQUEST["rad_state"])){
+            $valid_form = false;
             $list["state"] = 'Estado';
         }
         //verificar o campo tipo se foi escolhido
-        if (isset($_REQUEST["radio_type"]))
-            $request_rad_type = true;
-        else {
-            $request_rad_type = false;
+        if (!isset($_REQUEST["radio_type"])){
+            $valid_form = false;
             $list["type"] = 'Tipo';
         }
 
         //se todos preenchidos
-        if ($request_text && $request_rad_state && $request_rad_type && !$_SESSION["Item_added"] ) {
-
-            //obter o id do tipo de item
-            $rad_type_id = mysqli_fetch_assoc(mysqli_query($mysqli, '(SELECT id FROM item_type WHERE item_type.name="' . $_REQUEST["radio_type"] . '")'))["id"];
+        if ($valid_form && !$_SESSION["Item_added"] ) {
 
             //Inserção
-            if (mysqli_query($mysqli, 'INSERT INTO item(name,state,item_type_id) VALUES ("' . $_REQUEST["nome"] . '","' . $_REQUEST["rad_state"] . '",' . $rad_type_id . ')')) {
-                //Inserção com Sucesso
-                //obter o id da linha adicionada caso nomes iguais oderder id desc para obeter o ultimo caso iguais
-               // $type_id = mysqli_fetch_assoc(mysqli_query($mysqli, '(Select id FROM item WHERE item.name="' . $_REQUEST["nome"] . '"ORDER BY id DESC)'))["id"];
-                //$type_id = mysqli_insert_id($mysqli);
+            mysqli_begin_transaction($dbLink);
+            if (mysqli_query($dbLink, 'INSERT INTO item(name,state,item_type_id) VALUES ("' . $_REQUEST["nome"] . '","' . $_REQUEST["rad_state"] . '",' . $_REQUEST["radio_type"] . ')')) {
+
                 //mostrar o Sucesso
                 echo "<div class='success'>
                 <p id='suc_main'> A linha seguinte foi inserida com <span id='suc'> Successo </span> á tabela <span id='suc'> Item </span> </p>  
@@ -169,23 +177,25 @@ if( checkCapability("manage_items") ) {
                         <td>Item Type id</td>
                         <td>Estado</td>
                     </tr> 
-                    <tr class='row2'>
-                        <td>".mysqli_insert_id($mysqli)."</td>
+                    <tr class='row1'>
+                        <td>".mysqli_insert_id($dbLink)."</td>
                         <td>" . $_REQUEST["nome"] . "</td>
-                        <td>$rad_type_id</td>
+                        <td>" . $_REQUEST["radio_type"] . "</td>
                         <td>" . $_REQUEST["rad_state"] . "</td>
                     </tr> 
                 </table>
-                <a id='continuar' href=$current_page>Continuar</a>";
+                <a href=$current_page> <button class='continueButton' >Continuar</button> </a>";
 
+                mysqli_commit($dbLink);
                 $_SESSION["Item_added"]=true;
 
             } else {
+                mysqli_rollback($dbLink);
                 //mostrar o Insucesso
                 echo "<div class='unsuccess'> 
-                <p id='obg_main' > A inserção  <span id='obg'> Falhou: </span>  </p>";
+                        <p id='obg_main' > A inserção  <span id='obg'> Falhou: </span>  </p>
+                      </div>";
                 voltar_atras();
-                echo "</div>";
             }
 
         } else { //caso o formolário esteja inclompleto
@@ -194,21 +204,20 @@ if( checkCapability("manage_items") ) {
 
                  echo "<div class='unsuccess'>
                          <p id='obg_main' > A inserção <span id='obg'>Já foi executada!</span></p>
-                         <a id='continuar' href=$current_page>Continuar</a>
-                         </div>";
+                         </div>
+                         <a href=$current_page> <button class='continueButton' >Continuar</button> </a>";
 
              }else{//erro de campo
 
-                echo "<div class='unsuccess'> 
+                echo "<div class='unsuccess ' > 
                     <p id='obg_main' > O(s) campo(s) seguinte(s) é(são) <span id='obg'> Obrigatório(s): </span>  </p>
                     <ul>";
                 foreach ($list as $item) {
-                    echo "<li class='warnig_list'>$item</li>";
+                    echo "<li class='warning_list'>$item</li>";
                 }
 
-                echo"<br>";
+                echo"<br></ul></div>";
                 voltar_atras();
-                echo "</ul></div>";
              }
         }
 

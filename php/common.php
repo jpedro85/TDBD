@@ -5,9 +5,19 @@
  * require_once("custom/php/common.php");
  * ligação wordpress à BD.
  */
+Global $dbLink;
+$dbLink= connect();
+//mysqli_autocommit(false);
 
 global $current_page;
 $current_page = get_site_url().'/'.basename(get_permalink());
+
+Global $edicao_de_dados_page;
+$edicao_de_dados_page = get_site_url().'/edicao-de-dados';
+
+function reset_edicao_dados(){
+    $_SESSION["dado_alterado_bool"]=false;
+}
 
 function connect() {
     $link = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
@@ -19,7 +29,8 @@ function connect() {
 }
 
 function voltar_atras(){
-    echo "<script type='text/javascript'>document.write(\"<a href='javascript:history.back()'> <button class='continueButton' >Voltar AtrÃ¡s</button> </a>\");</script>
+
+    echo "<script type='text/javascript'>document.write(\"<a href='javascript:history.back()'> <button class='continueButton' >Voltar Atrás</button> </a>\");</script>
     <noscript>
     <a href='" . $_SERVER['HTTP_REFERER'] . "</a>
     </noscript>";

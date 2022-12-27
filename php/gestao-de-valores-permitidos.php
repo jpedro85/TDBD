@@ -1,15 +1,15 @@
 <?php
 //valores premitivos
 require_once("custom/php/common.php");
-//echo "132 <br>";
+//echo "138 <br>";
 //links
-//verificação cliente side
 //transactions
+reset_edicao_dados();
 if( checkCapability("manage_allowed_values") ) {
 
     if (!isset($_REQUEST["estado"])) {
 
-        $mysqli = connect();
+        //$mysqli = connect();
         $rowType = "row2";
         $rowType2 = "row2";
         $rowType3 = "row2";
@@ -27,102 +27,129 @@ if( checkCapability("manage_allowed_values") ) {
                 </tr>";
 
         $query_items ='SELECT item.id , item.name FROM item ORDER BY item.name;';
-        $result_item = mysqli_query($mysqli,$query_items);
+        $result_item = mysqli_query($dbLink,$query_items);
 
-        //percorrer os items que tem sub items com enum
-        while($item = mysqli_fetch_assoc( $result_item ) ) {
+        if( mysqli_num_rows($result_item) != 0) {
 
-            //todos
-            $colunas ='subitem.id AS sub_id, subitem.name , subitem.item_id ,subitem.value_type, subitem.mandatory , subitem.state AS sub_state , subitem_allowed_value.id AS value_id , subitem_allowed_value.value ,subitem_allowed_value.state';
-            $query_Subitems = 'SELECT '.$colunas.' FROM subitem LEFT OUTER JOIN subitem_allowed_value ON subitem.id = subitem_allowed_value.subitem_id WHERE subitem.value_type="enum" AND subitem.item_id ='.$item["id"];
-            $result_Subitems = mysqli_query($mysqli,$query_Subitems);
+            //percorrer os items que tem sub items com enum
+            while ($item = mysqli_fetch_assoc($result_item)) {
 
-            //Agrupados (devolve os subitems)
-            $result_Subitems_group = mysqli_query($mysqli,$query_Subitems.' GROUP BY subitem.name ');
+                //todos
+                $colunas = 'subitem.id AS sub_id, subitem.name , subitem.item_id ,subitem.value_type, subitem.mandatory , subitem.state AS sub_state , subitem_allowed_value.id AS value_id , subitem_allowed_value.value ,subitem_allowed_value.state';
+                $query_Subitems = 'SELECT ' . $colunas . ' FROM subitem LEFT OUTER JOIN subitem_allowed_value ON subitem.id = subitem_allowed_value.subitem_id WHERE subitem.value_type="enum" AND subitem.item_id =' . $item["id"];
+                $result_Subitems = mysqli_query($dbLink, $query_Subitems);
 
-            //aletrar tipode coluna
-            $rowType = switchBackground($rowType);
+                //Agrupados (devolve os subitems)
+                $result_Subitems_group = mysqli_query($dbLink, $query_Subitems . ' GROUP BY subitem.name ');
 
-            echo "<tr>";
-            echo "<td class=$rowType rowspan=".($result_Subitems->num_rows == 0 ? 1 : $result_Subitems->num_rows).">". $item["name"] . "</td>";
+                //aletrar tipode coluna
+                $rowType = switchBackground($rowType);
 
-            if ($result_Subitems_group->num_rows != 0) {
+                echo "<tr>";
+                echo "<td class=$rowType rowspan=" . (mysqli_num_rows($result_Subitems) == 0 ? 1 : mysqli_num_rows($result_Subitems)) . ">" . $item["name"] . "</td>";
 
-                //percorrer todos os subitems
-                while ($subItem = mysqli_fetch_assoc($result_Subitems_group) ) {
-                    //tem sempre um linha emobara com nulls
-                    $result_SubSubitems = mysqli_query($mysqli,$query_Subitems.' AND subitem.name ="'.$subItem["name"].'"');
+                if (mysqli_num_rows($result_Subitems_group) != 0) {
 
-                    //aletrar tipode coluna
-                    $rowType2 = switchBackground($rowType2);
-                    $rowType3 = 'row2';
-
-                    echo "<td class=$rowType2 rowspan=$result_SubSubitems->num_rows>". $subItem["sub_id"] ."</td>";
-                    $ref = $current_page.'?estado=introducao&subitem='.$subItem["sub_id"];
-                    echo "<td class=$rowType2 rowspan=$result_SubSubitems->num_rows><a href=$ref >[".$subItem["name"]."]</a></td>";
-
-                    if($result_SubSubitems->num_rows != 0){
-
-                        //percorrer todos os valores do subitem
-                        while($subSubItem_value = mysqli_fetch_assoc($result_SubSubitems) )
-                        {
-                            //aletrar tipode coluna
-                            $rowType3 = switchBackground($rowType3);
-
-                            if( isset($subSubItem_value["value_id"]) || isset($subSubItem_value["value"]) || isset($subSubItem_value["state"])  ) {
-
-                                echo "<td class=$rowType3>" . $subSubItem_value["value_id"] . "</td>";
-                                echo "<td class=$rowType3>" . $subSubItem_value["value"] . "</td>";
-                                echo "<td class=$rowType3>" . $subSubItem_value["state"] . "</td>";
-                                echo "<td class=$rowType3>nada</td>";
-                                echo "</tr>";
-
-                            } else {
-
-                                echo "<td colspan=4 class=$rowType3>Não existem valoes permitidos relacionados com este subitem</td>";
-                                echo"</tr>";
-
-                            }
-                        }
-
-                    } else {
+                    //percorrer todos os subitems
+                    while ($subItem = mysqli_fetch_assoc($result_Subitems_group)) {
+                        //tem sempre um linha emobara com nulls
+                        $result_SubSubitems = mysqli_query($dbLink, $query_Subitems . ' AND subitem.name ="' . $subItem["name"] . '" ORDER BY subitem_allowed_value.value');
 
                         //aletrar tipode coluna
-                        $rowType3 = switchBackground($rowType3);
-                        echo "<td colspan=4 class=$rowType3>Não existem valoes permitidos relacionados com este subitem</td>";
-                        echo"</tr>";
+                        $rowType2 = switchBackground($rowType2);
+                        $rowType3 = 'row2';
+
+                        echo "<td class=$rowType2 rowspan=" . mysqli_num_rows($result_SubSubitems) . ">" . $subItem["sub_id"] . "</td>";
+                        $ref = $current_page . '?estado=introducao&subitem=' . $subItem["sub_id"];
+                        echo "<td class=$rowType2 rowspan=" . mysqli_num_rows($result_SubSubitems) . "><a href=$ref >[" . $subItem["name"] . "]</a></td>";
+
+                        if (mysqli_num_rows($result_SubSubitems) != 0) {
+
+                            //percorrer todos os valores do subitem
+                            while ($subSubItem_value = mysqli_fetch_assoc($result_SubSubitems)) {
+                                //aletrar tipode coluna
+                                $rowType3 = switchBackground($rowType3);
+
+                                if (isset($subSubItem_value["value_id"]) || isset($subSubItem_value["value"]) || isset($subSubItem_value["state"])) {
+
+                                    echo "<td class=$rowType3>" . $subSubItem_value["value_id"] . "</td>";
+                                    echo "<td class=$rowType3>" . $subSubItem_value["value"] . "</td>";
+                                    echo "<td class=$rowType3>" . $subSubItem_value["state"] . "</td>";
+
+                                    if ($subSubItem_value["state"]=="active"){
+                                        echo "<td class=$rowType3>
+                                                <a href=".$edicao_de_dados_page.'?estado=editar&tipo=valor_permitido&id='.$subSubItem_value["value_id"].">[Editar]</a> <br> 
+                                                <a href=".$edicao_de_dados_page.'?estado=desativar&tipo=valor_permitido&id='.$subSubItem_value["value_id"].">[Desativar]</a> <br>
+                                                <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=valor_permitido&id='.$subSubItem_value["value_id"].">[Apagar]</a> <br>
+                                              </td>";
+                                    } else {
+                                        echo "<td class=$rowType3>
+                                                <a href=".$edicao_de_dados_page.'?estado=editar&tipo=valor_permitido&id='.$subSubItem_value["value_id"].">[Editar]</a> <br> 
+                                                <a href=".$edicao_de_dados_page.'?estado=ativar&tipo=valor_permitido&id='.$subSubItem_value["value_id"].">[Ativar]</a> <br>
+                                                <a href=".$edicao_de_dados_page.'?estado=apagar&tipo=valor_permitido&id='.$subSubItem_value["value_id"].">[Apagar]</a> <br>
+                                              </td>";
+                                    }
+
+                                    echo "</tr>";
+
+                                } else {
+
+                                    echo "<td colspan=4 class=$rowType3>Não existem valoes permitidos relacionados com este subitem</td>";
+                                    echo "</tr>";
+
+                                }
+                            }
+
+                        } else {
+
+                            //aletrar tipode coluna
+                            $rowType3 = switchBackground($rowType3);
+                            echo "<td colspan=4 class=$rowType3>Não existem valoes permitidos relacionados com este subitem</td>";
+                            echo "</tr>";
+
+                        }
+
+                        echo "</tr>";
 
                     }
 
-                    echo"</tr>";
+                    echo "</tr>";
 
+                } else {
+                    //aletrar tipode coluna
+                    $rowType2 = switchBackground($rowType2);
+                    //aletrar tipode coluna
+                    $rowType3 = switchBackground($rowType3);
+                    echo "<td colspan=6 class=$rowType2 >Não há subitems especificados cujo tipo de valor seja ENUM</td>";
+                    echo "</tr>";
                 }
 
-                echo"</tr>";
-
-            } else {
-                //aletrar tipode coluna
-                $rowType2 = switchBackground($rowType2);
-                //aletrar tipode coluna
-                $rowType3 = switchBackground($rowType3);
-                echo"<td colspan=6 class=$rowType2 >Não há subitems especificados cujo tipo de valor seja ENUM</td>";
-                echo"</tr>";
             }
 
-        }
+            echo "</table>";
 
-        echo"</table>";
+            //caso não exxita items
+        } else {
+
+            echo "<tr>
+                    <td colspan=7 class='row1'>Não há tipos items</td>
+                  </tr>
+                  </table>";
+
+        }
 
     }else if ($_REQUEST["estado"] == 'introducao'){
 
         $_SESSION["subitem_id"] = $_REQUEST["subitem"];
 
-        echo"<h3 class='sub_title'>Gestão de valores permitidos - introdução</h3>";
-        echo"<form method='post' action=$current_page>
-                <input type='text' name='nome' placeholder='Valor Permitido'>
+        echo"<h3 class='sub_title'>Gestão de valores permitidos - introdução</h3>
+             <p class='form_input_title'>Nome do valor permitido</p>
+             <form method='post' action=$current_page>
+                <input type='text' name='nome' placeholder='Nome'>
                 <input type='hidden' name='estado' value='inserir'>
                 <hr>
-                <input type='submit' name='submit' value='Inserir valor permitido'>
+                <button type='submit' class='continueButton'>Inserir Valor Premitido</button>
+                <a href=$current_page ><button type='button' class='continueButton'>Cancelar</button></a>
             </form>";
 
         $_SESSION["SubAllowedValue_added"]=false;
@@ -133,10 +160,11 @@ if( checkCapability("manage_allowed_values") ) {
 
         if( isset($_REQUEST["nome"]) && $_REQUEST["nome"]!="" && !$_SESSION["SubAllowedValue_added"] )
         {
-            $mysqli = connect();
+
+            mysqli_begin_transaction($dbLink);
             $wuery_inert = 'INSERT INTO subitem_allowed_value(subitem_id,value,state) VALUES ('.$_SESSION["subitem_id"].',"'.$_REQUEST["nome"].'","active")';
 
-            if (mysqli_query($mysqli, $wuery_inert)) {
+            if (mysqli_query($dbLink, $wuery_inert)) {
                 //Inserção com Sucesso mostrat sucesso
 
                 echo "<div class='success'>
@@ -149,20 +177,21 @@ if( checkCapability("manage_allowed_values") ) {
                         <td>Value</td>
                         <td>Estado</td>
                     </tr> 
-                    <tr class='row2'>
-                        <td>".mysqli_insert_id($mysqli)."</td>
+                    <tr class='row1'>
+                        <td>".mysqli_insert_id($dbLink)."</td>
                         <td>" . $_SESSION["subitem_id"] . "</td>
                         <td>" . $_REQUEST["nome"] . "</td>
                         <td>Active</td>
                     </tr> 
                 </table>
-                <a id='continuar' href=$current_page>Continuar</a>";
+                <a href=$current_page> <button class='continueButton' >Continuar</button> </a>";
 
+                mysqli_commit($dbLink);
                 $_SESSION["SubAllowedValue_added"]=true;
 
             } else {
 
-
+                mysqli_rollback($dbLink);
                 //mostrar o Insucesso
                 echo "<div class='unsuccess'> 
                 <p id='obg_main' > A inserção  <span id='obg'> Falhou: </span>  </p>";
@@ -178,18 +207,19 @@ if( checkCapability("manage_allowed_values") ) {
 
                 echo "<div class='unsuccess'>
                          <p id='obg_main' > A inserção <span id='obg'>Já foi executada!</span></p>
-                         <a id='continuar' href=$current_page>Continuar</a>
-                         </div>";
+                         </div>
+                         <a href=$current_page> <button class='continueButton' >Continuar</button> </a>";
 
             } else {
 
                 echo "<div class='unsuccess' > 
                     <p id='obg_main' > O campo seguinte é <span id='obg'> Obrigatório: </span>  </p>
                     <ul>
-                        <li class='warnig_list'>Nome</li>
-                    <br>";
+                        <li class='warning_list'>Nome</li>
+                        <br>
+                    </ul>
+                    </div>";
                 voltar_atras();
-                echo "</ul></div>";
 
             }
         }

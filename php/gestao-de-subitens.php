@@ -1,7 +1,7 @@
 <?php
 require_once("custom/php/common.php");
-
-$dbLink = connect();
+reset_edicao_dados();
+//$dbLink = connect();
 if (checkCapability("manage_subitems")) {
     if (!mysqli_select_db($dbLink, "bitnami_wordpress")) {
         die("Connection to DB failed: " . mysqli_connect_error());
@@ -78,7 +78,7 @@ if (checkCapability("manage_subitems")) {
                     $firstLetters = substr($itemNameAccentless, 0, 3);
                     $subitemName_ASCI = preg_replace('/[^a-z0-9_ ]/i', '', $subitemName);
                     $subitemNameSpaceless = str_replace(" ", "_", $subitemName_ASCI);
-                    $formFieldName = $subitemNameSpaceless . "-" . $subitemId . "-" . $subitemNameSpaceless;
+                    $formFieldName = $firstLetters . "-" . $subitemId . "-" . $subitemNameSpaceless;
                     $queryFieldName = "UPDATE subitem SET form_field_name='$formFieldName' WHERE id=" . $subitemId;
                     if (!mysqli_query($dbLink, $queryFieldName)) {
                         echo '<div class="unsuccess warnings"><span>Erro: ' . $queryFieldName . '<br>' . mysqli_error($dbLink) . '</span></div>';
@@ -184,9 +184,14 @@ if (checkCapability("manage_subitems")) {
                             <td class="' . $bckgType2 . '">' . $rowSubitem["form_field_order"] . '</td>
                             <td class="' . $bckgType2 . '">' . $rowSubitem["mandatory"] . '</td>
                             <td class="' . $bckgType2 . '">' . $rowSubitem["state"] . '</td>
-                            <td class="' . $bckgType2 . '"><a href="' . $current_page . '?estado=editar&item=' . $rowItem["id"] . '">[editar]</a><br>
-                                <a href="' . $current_page . '?estado=desativar&item=' . $rowItem["id"] . '">[desativar]</a><br>
-                                <a href="' . $current_page . '?estado=apagar&item=' . $rowItem["id"] . '">[apagar]</a></td>
+                            <td class="' . $bckgType2 . '"><a href="' . $edicao_de_dados_page . '?estado=editar&tipo=subitem&id=' . $rowSubitem["id"] . '">[editar]</a><br>';
+
+                                if($rowSubitem["state"]=='inactive')
+                                    echo '<a href="' . $edicao_de_dados_page . '?estado=ativar&tipo=subitem&id=' . $rowSubitem["id"] . '">[ativar]</a><br>';
+                                else
+                                    echo '<a href="' . $edicao_de_dados_page . '?estado=desativar&tipo=subitem&id=' . $rowSubitem["id"] . '">[desativar]</a><br>';
+
+                            echo '<a href="' . $edicao_de_dados_page . '?estado=apagar&tipo=subitem&id=' . $rowSubitem["id"] . '">[apagar]</a></td>
                             </tr>';
                             }
                         } else {
@@ -199,9 +204,16 @@ if (checkCapability("manage_subitems")) {
                           <td class="' . $bckgType2 . '">' . $rowSubitem["form_field_order"] . '</td>
                           <td class="' . $bckgType2 . '">' . $rowSubitem["mandatory"] . '</td>
                           <td class="' . $bckgType2 . '">' . $rowSubitem["state"] . '</td>
-                          <td class="' . $bckgType2 . '"><a href="' . $current_page . '?estado=editar&item=' . $rowItem["id"] . '">[editar]</a><br>
-                              <a href="' . $current_page . '?estado=desativar&item=' . $rowItem["id"] . '">[desativar]</a><br>
-                              <a href="' . $current_page . '?estado=apagar&item=' . $rowItem["id"] . '">[apagar]</a></td>
+                          <td class="' . $bckgType2 . '"><a href="' . $edicao_de_dados_page . '?estado=editar&tipo=subitem&id=' . $rowSubitem["id"] . '">[editar]</a><br>';
+
+                            if($rowSubitem["state"]=='inactive'){
+                                echo '<a href="' . $edicao_de_dados_page . '?estado=ativar&tipo=subitem&id=' . $rowSubitem["id"] . '">[ativar]</a><br>';
+                            }
+                            else {
+                                echo '<a href="' . $edicao_de_dados_page . '?estado=desativar&tipo=subitem&id=' . $rowSubitem["id"] . '">[desativar]</a><br>';
+                            }
+
+                           echo   '<a href="' . $edicao_de_dados_page . '?estado=apagar&tipo=subitem&id=' . $rowSubitem["id"] . '">[apagar]</a></td>
                           </tr>';
                         }
                     }
@@ -276,7 +288,7 @@ if (checkCapability("manage_subitems")) {
             <input type="radio" name="mandatory" checked value="Sim"><label>Sim</label><br>
             <input type="radio" name="mandatory" value="Nao"><label>Nao</label><br>
             <input type="hidden" name="estado" value="inserir"><br>
-            <input type="submit" value="Inserir Subitem">
+            <button type="submit" class="continueButton">Inserir Subitem</button>
         </form>
       </body>';
             $_SESSION["subitemAdded"] = false;
