@@ -73,7 +73,8 @@ if (checkCapability("manage_subitems")) {
                 }
                 if (!$queryErrors) {//senao ocorreu erros nas querries ate agr procede-se a criar o form_field_name
                     $subitemId = mysqli_insert_id($dbLink);//id do subitem inserido atras
-                    $removeAccent = Transliterator::createFromRules(':: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;', Transliterator::FORWARD);//NFD decompoe a letra do acento , [:Nonspacing Mark:] (Unicode Characters) é basicamente onde o acento fica depois de ser decomposto e a seguir é removido, NFC volta a juntar a letra decomposta que ira ficar sem acento
+                    $removeAccent = Transliterator::createFromRules(':: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;', Transliterator::FORWARD);
+                    //NFD decompoe a letra do acento , [:Nonspacing Mark:] (Unicode Characters) é basicamente onde o acento fica depois de ser decomposto e a seguir é removido, NFC volta a juntar a letra decomposta que ira ficar sem acento
                     $itemNameAccentless = $removeAccent->transliterate($itemName);
                     $firstLetters = substr($itemNameAccentless, 0, 3);
                     $subitemName_ASCI = preg_replace('/[^a-z0-9_ ]/i', '', $subitemName);
@@ -133,7 +134,7 @@ if (checkCapability("manage_subitems")) {
                                 </tr>
                             </tbody>
                           </table><br><br>
-                          <a href='$current_page' >Continuar</a>";
+                          <a href='$current_page' ><button class='continueButton' >Continuar</button></a>";
                         $_SESSION["subitemAdded"] = true;
                     } else {
                         echo "<div class='unsuccess warnings'><p id='obg_main'><span id='obg'>Erro:</span> Este subitem já foi criado e <span id='obg'>inserido na Base de Dados</span></p></div>
