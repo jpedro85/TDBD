@@ -82,6 +82,10 @@ function validateDate($date, $format = 'Y-m-d')
     //o Y (4 digitos) devolve TRUE para qualquer inteiro por isso usando === vai verificar se sao so de mesmo tipo dando fix no problema
     return $dateFromat && $dateFromat->format($format) === $date;
 }
+function voltar_atraz()
+{
+    echo "<button type='button' class='continueButton' onClick='history.back();'>Voltar</button>";
+}
 ?>
 
 
