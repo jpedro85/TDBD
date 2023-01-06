@@ -90,7 +90,7 @@ if (checkCapability("manage_records")) {
                            <th>Registos</th>
                         </tr>";
                 $bckgType = 'row2_registo';
-                while ($rowChild = mysqli_fetch_assoc($resultChild)) {
+                while ($rowChild = mysqli_fetch_assoc($resultChild)) {//cada crianca
                     if ($bckgType == 'row1_registo') {
                         $bckgType = 'row2_registo';
                     } else {
@@ -106,21 +106,20 @@ if (checkCapability("manage_records")) {
                     $values = "";
                     $queryItem = "SELECT id,name FROM item ORDER BY name ASC";
                     $resultItem = mysqli_query($dbLink, $queryItem);
-                    while ($rowItem = mysqli_fetch_assoc($resultItem)) {
+                    while ($rowItem = mysqli_fetch_assoc($resultItem)) {//cada item relacionado a crianca
                         $itemName = strtoupper($rowItem["name"]) . ":";
                         $done = false;
                         $queryDateProducer = "SELECT DISTINCT date, producer FROM value";
                         $resultDateProducer = mysqli_query($dbLink, $queryDateProducer);
                         $dateInfo = "";
-                        while ($rowDateProducer = mysqli_fetch_assoc($resultDateProducer)) {
+                        while ($rowDateProducer = mysqli_fetch_assoc($resultDateProducer)) {//todas a datas e producer distintos
                             $querySubitem = "SELECT id,name,unit_type_id FROM subitem WHERE item_id=" . $rowItem["id"];
                             $resultSubitem = mysqli_query($dbLink, $querySubitem);
-                            //$dateProducer = "<br>[editar][apagar] - <strong>" . $rowDateProducer["date"] . "</strong> (" . $rowDateProducer["producer"] . ") -";
                             $allDateInfo = "";
                             $relatedDate = false;
                             $counter_value = 1;
-                            while ($rowSubitem = mysqli_fetch_assoc($resultSubitem)) {
-                                $queryValue = "SELECT id,value FROM value WHERE child_id =" . $rowChild["id"] . " AND subitem_id=" . $rowSubitem["id"] . " AND date='" . $rowDateProducer["date"] . "' AND producer='" . $rowDateProducer["producer"] . "'";
+                            while ($rowSubitem = mysqli_fetch_assoc($resultSubitem)) {//subitem relacionado ao item da crianca
+                                $queryValue = "SELECT id,value FROM value WHERE child_id =" . $rowChild["id"] . " AND subitem_id=" . $rowSubitem["id"] . " AND date='" . $rowDateProducer["date"] . "' AND " .( $rowDateProducer["producer"]!=null ? "producer='" . $rowDateProducer["producer"] . "'" : "producer IS NULL" );
                                 $resultValue = mysqli_query($dbLink, $queryValue);
                                 $resultFetchedUnit = mysqli_query($dbLink, "SELECT name FROM subitem_unit_type WHERE id=" . $rowSubitem["unit_type_id"]);
                                 $resultFetchedUnit != null ? $fetchedUnit = mysqli_fetch_assoc($resultFetchedUnit) : $fetchedUnit = null;
@@ -128,18 +127,15 @@ if (checkCapability("manage_records")) {
                                 $counter = 1;
                                 if (mysqli_num_rows($resultValue) != 0) {
                                     if (!$done) {
-                                        //$info .= $itemName;
-                                        //$allDateInfo.=$itemName;
                                         $done = true;
                                     }
                                     if (!$relatedDate) {
-                                        //$allDateInfo .= " - <strong>" . $rowDateProducer["date"] . "</strong> (" . $rowDateProducer["producer"] . ") -";
                                         $relatedDate = true;
                                     }
                                     $allDateInfo .= $subitemName;
-                                    while ($rowValue = mysqli_fetch_assoc($resultValue)) {
+                                    while ($rowValue = mysqli_fetch_assoc($resultValue)) {//todos os valores associados aos subitems da crianca
                                         if (mysqli_num_rows($resultValue) == $counter) {
-                                            (!is_null($fetchedUnit) && array_key_exists("name", $fetchedUnit)) ? $allDateInfo .= $rowValue["value"] . " " . $fetchedUnit["name"] . "); " : $allDateInfo .= $rowValue["value"] . "); ";
+                                            (!is_null($fetchedUnit) && array_key_exists("name", $fetchedUnit)) ? $allDateInfo .= $rowValue["value"] . " " . $fetchedUnit["name"] . "); " : $allDateInfo .= $rowValue["value"] . "); ";//um string que e incrementada com ainformaçao do item subitens e os seus valores associado seguindo a formatacao
                                             $values .= "&value" . $counter_value . "=" . $rowValue["id"];
                                             $counter_value++;
                                         } else if (!empty($rowValue["value"]) && $counter < mysqli_num_rows($resultValue)) {
@@ -155,9 +151,9 @@ if (checkCapability("manage_records")) {
                             $dateProducer = "<br> 
                                                     <a href='" . $edicao_de_dados_page . "?estado=editar&tipo=resgisto$values" . "'>[Editar]</a> 
                                                     <a href=" . $edicao_de_dados_page . "?estado=apagar&tipo=resgisto$values" . "'>[Apagar]</a>";
-                            if ($relatedDate) $dateInfo .= $dateProducer . " - <strong>" . $rowDateProducer["date"] . "</strong> (" . $rowDateProducer["producer"] . ") -" . $allDateInfo;
+                            if ($relatedDate) $dateInfo .= $dateProducer . " - <strong>" . $rowDateProducer["date"] . "</strong> (" . $rowDateProducer["producer"] . ") -" . $allDateInfo;//adiciona a string os links de editar e apagar e toda informacao relacionada ao producer e data
                         }
-                        if ($done) $info .= $itemName . $dateInfo . "<br>";
+                        if ($done) $info .= $itemName . $dateInfo . "<br>";//junta a informacao toda para fazer a linha formatada
                     }
                     echo "<td>$info</td></tr>";
                 }

@@ -1,6 +1,6 @@
 <?php
 require_once("custom/php/common.php");
-echo "60<br>";
+echo "69<br>";
 //verificações dos campos
 //estados = {"editar","ativar","desativar","apagar"}
 //tipos = {"subitem","item","valor_permitido","unidade","resgisto"}
@@ -16,7 +16,7 @@ mysqli_autocommit($dbLink,false);
 //if ( isset($_SESSION["dado_alterado_last_estado"]) && isset($_REQUEST["estado"]) && ( ( $_SESSION["dado_alterado_last_estado"]!=$_REQUEST["estado"] ) || ( $_SESSION["dado_alterado_last_tipo"]!=$_REQUEST["tipo"] ) || ( $_SESSION["dado_alterado_last_id"]!=$_REQUEST["id"])  ) )
   //  $_SESSION["dado_alterado_bool"]=false;
 
-if( isset($_SESSION["dado_alterado_bool"]) && !$_SESSION["dado_alterado_bool"]  && isset( $_REQUEST["estado"] ) && isset( $_REQUEST["tipo"] ) && isset( $_REQUEST["id"] ) )
+if( isset($_SESSION["dado_alterado_bool"]) && !$_SESSION["dado_alterado_bool"]  && isset( $_REQUEST["estado"] ) && isset( $_REQUEST["tipo"] ) &&  isset( $_REQUEST["id"]) )
 {
 
     if( $_REQUEST["estado"] == "editar" ){
@@ -321,7 +321,181 @@ if( isset($_SESSION["dado_alterado_bool"]) && !$_SESSION["dado_alterado_bool"]  
             }
 
         } else if( $_REQUEST["tipo"] == "resgisto" ) {
-            teste();
+
+            if(!isset($_REQUEST["update"]) ) {
+
+                $contador = 1;
+                $ids = "(";
+                $idList = "";
+                while (isset($_REQUEST["value$contador"])) {
+
+                    $ids .= ($ids == "(" ? $_REQUEST["value$contador"] : "," . $_REQUEST["value$contador"]);
+                    $idList .= "&value$contador=".$_REQUEST["value$contador"];
+                    $contador++;
+                }
+                $ids .= ")";
+
+                $querie_subitems = 'SELECT subitem.id AS subId , subitem.name ,subitem.value_type , subitem.unit_type_id , subitem.form_field_type, subitem.mandatory , value.* FROM value,subitem WHERE value.subitem_id = subitem.id AND child_id =' . $_REQUEST["id"] . ' AND  form_field_type != "checkbox" AND value.id IN ' . $ids . ' ORDER BY subitem.id';
+                $result = mysqli_query($dbLink, $querie_subitems);
+                $contador = 0;
+
+                echo "<form method='post' action='".$current_page . '?estado=' . $_REQUEST["estado"] . '&tipo=' . $_REQUEST["tipo"] . '&id=' . $_REQUEST["id"] .$idList." '>";
+
+                if (mysqli_num_rows($result) != 0) {
+
+                    while ($subItem = mysqli_fetch_assoc($result)) {
+
+                       // echo $subItem["subId"] . " : " . $subItem["value_type"] . " : " . $subItem["unit_type_id"] . " : " . $subItem["mandatory"] . " : " . $subItem["value"] . " : " . $subItem["id"] . " : ";
+                        $obrigatorio = $subItem["mandatory"];
+                        $addUnidades = $subItem["unit_type_id"] != null;
+                        switch ($subItem["value_type"]) {
+                            case "text":
+
+                                echo "<h3 class='form_input_title'>" . $subItem["name"] . ($obrigatorio == 1 ? "*</h3>" : "</h3>");
+
+                                if ($subItem["form_field_type"] == "text") {//text text
+                                    if ($addUnidades) {
+                                        $query5 = "SELECT name from subitem_unit_type WHERE id=" . $subItem["unit_type_id"];
+                                        $unidades = mysqli_fetch_assoc(mysqli_query($dbLink, $query5));
+                                        echo "<input name='".$subItem["id"]."' type='text' placeholder='" . $unidades["name"] . "' value=' " . $subItem["value"] . "'>";//com unidades no placeholder
+
+                                    } else {
+                                        echo "<input name='".$subItem["id"]."' type='text' placeholder='sem unidades'  value=' " . $subItem["value"] . "' >";//sem unidades no placeholder
+
+                                    }
+                                    $contador++;
+
+                                } else {//text textbox
+                                    if ($addUnidades) {
+                                        $query5 = "SELECT name from subitem_unit_type WHERE id=" . $subItem["unit_type_id"];
+                                        $unidades = mysqli_fetch_assoc(mysqli_query($dbLink, $query5));
+                                        echo "<textarea class='textArea' name='".$subItem["id"]."' rows='5' cols'50' placeholder='" . $unidades["name"] . "'>" . $subItem["value"] . "'</textarea>";//com unidades no placeholder
+
+                                    } else {
+                                        echo "<textarea class='textArea' name='".$subItem["id"]."' rows='5' cols='50' placeholder='sem unidades'> " . $subItem["value"] . " </textarea>";//sem unidades no placeholder
+                                    }
+                                }
+                                $contador++;
+
+                                break;
+                            case "bool"://bool
+    //spec tem erro Cheked
+                                echo "<h3 class='form_input_title'>" . $subItem["name"] . ($obrigatorio == 1 ? "*</h3>" : "</h3>");
+                                echo "<input name='".$subItem["id"]."' id='rbool1' type='radio' value='1' " . ($subItem["value"] == 1 ? "checked" : "") . "><label for='rbool1'>Verdadeiro</label>";//bool verdadeiro
+                                echo "<input name='".$subItem["id"]."' id='rbool2' type='radio' value='0' " . ($subItem["value"] == 0 ? "checked" : "") . "><label for='rbool2'>Falso</label>";//bool falso
+
+                                $contador++;
+
+                                break;
+                            case "double":
+                            case "int":
+
+                                echo "<h3 class='form_input_title'>" . $subItem["name"] . ($obrigatorio == 1 ? "*</h3>" : "</h3>");
+
+                                if ($subItem["form_field_type"] == "text") {//int/double text
+                                    if ($addUnidades) {
+                                        $query5 = "SELECT name from subitem_unit_type WHERE id=" . $subItem["unit_type_id"];
+                                        $unidades = mysqli_fetch_assoc(mysqli_query($dbLink, $query5));
+                                        echo "<input name='".$subItem["id"]."' type='text' placeholder='" . $unidades["name"] . "'>";//com unidades no placeholder
+                                    } else {
+                                        echo "<input name='".$subItem["id"]."' type='text' placeholder='sem unidades'>";//sem unidades no placeholder
+
+                                    }
+                                    $contador++;
+                                }
+                                break;
+                            case "enum":
+                                $query3 = "SELECT value from subitem_allowed_value WHERE subitem_id=" . $subItem["subId"] . " AND state='active'";
+                                $result3 = mysqli_query($dbLink, $query3);
+
+                                if (mysqli_num_rows($result3) > 0) {
+
+                                    echo "<h3 class='form_input_title'>" . $subItem["name"] . ($obrigatorio == 1 ? "*</h3>" : "</h3>");
+                                    if ($subItem["form_field_type"] == "selectbox") {//enum selectbox
+                                        echo "<select name='".$subItem["id"]."'>";
+                                        echo "<option value='empty'>Selecione um valor</option>";
+                                        while ($valor = mysqli_fetch_assoc($result3)) {
+                                            echo "<option value='" . $valor["value"] . " '" . ($subItem["value"] == $valor["value"] ? "selected" : "") . " '>" . $valor["value"] . "</option>";
+                                            echo "<br>";
+                                        }
+                                        echo "</select>";
+                                        $contador++;
+                                    } else if ($subItem["form_field_type"] == "radio") {//enum radio
+                                        $id = 0;
+                                        while ($valor = mysqli_fetch_assoc($result3)) {
+                                            echo "<input name='".$subItem["id"]."' type='radio' value='" . $valor["value"] . "' " . ($subItem["value"] == $valor["value"] ? "checked" : "") . ">";
+                                            echo "<label>" . $valor["value"] . "</label>";
+                                            echo "<br>";
+                                            $id++;
+                                        }
+                                        $contador++;
+                                    }
+                                }
+                                break;
+                        }
+
+                    }
+
+                }
+
+                $querie_box = 'SELECT subitem.id AS subId , subitem.name ,subitem.value_type , subitem.unit_type_id , subitem.form_field_type, subitem.mandatory , value.* FROM value,subitem WHERE value.subitem_id = subitem.id AND child_id =' . $_REQUEST["id"] . " AND  form_field_type = 'checkbox' AND value.id IN " . $ids . " GROUP BY subitem.name";
+                $result = mysqli_query($dbLink, $querie_box);
+
+                $added = null;
+                while ($box = mysqli_fetch_assoc($result)) {
+
+                    // echo "12143254".":".mysqli_num_rows($result);
+                    echo "<h3 class='form_input_title'>" . $box["name"] . "</h3>";
+
+                    //echo $box["name"]."<br>";
+                    $querie_subitem = 'SELECT subitem.id AS subId , subitem.name ,subitem.value_type , subitem.unit_type_id , subitem.form_field_type, subitem.mandatory , value.* FROM value,subitem WHERE value.subitem_id = subitem.id AND child_id =' . $_REQUEST["id"] . ' AND  form_field_type = "checkbox" AND value.id IN ' . $ids . ' and subitem.name = "' . $box["name"] . '"';
+                    $result1 = mysqli_query($dbLink, $querie_subitem);
+
+                    $conta = 1;
+                    $last_id = 0;
+
+                    while ($subtem = mysqli_fetch_assoc($result1)) {
+
+                        echo "<input type='checkbox' checked name='".$subtem["id"]."' value='" . $subtem["value"] . "'>";
+                        echo "<label>" . $subtem["value"] . "</label><br>";
+
+                        $added[$subtem["value"]] = true;
+                        $contador++;
+                        $last_id =  $subtem["id"];
+                    }
+
+                    $query5 = "SELECT value from subitem_allowed_value WHERE subitem_id=" . $box["subId"] . " AND state='active'";
+                    $result5 = mysqli_query($dbLink, $query5);
+
+                    while ($allowed = mysqli_fetch_assoc($result5)) {
+
+                        if (!isset($added[$allowed["value"]]) ) {
+
+                            echo "<input type='checkbox' name='".$last_id."_".$conta."' value='" . $allowed["value"] . "'>";
+                            echo "<label>" . $allowed["value"] . "</label><br>";
+
+                            $contador++;
+                            $conta++;
+
+                        }
+                    }
+
+                }
+
+                echo " <input type='hidden' name='update' value='true'>
+                       <button type='submit' class='continueButton'>Apagar</button>
+                       <a href='" . get_site_url() . '/gestao-de-registos' . "' ><button type='button' class='continueButton'>Cancelar</button></a>
+                       </form>";
+
+            }else{
+
+
+                // loop pelos ids e atualizar
+                echo "teste";
+                voltar_atras();
+
+
+            }
 
         } else {
             show_error_tipo();
@@ -531,7 +705,61 @@ if( isset($_SESSION["dado_alterado_bool"]) && !$_SESSION["dado_alterado_bool"]  
             }
 
         } else if( $_REQUEST["tipo"] == "resgisto" ) {
-            teste();
+
+            if(!isset($_REQUEST["update"]) ){
+
+                $counter=1;
+                $ids = "(";
+              //  $inputs = "";
+                while( isset($_REQUEST["value$counter"]) ){
+                    $ids .= ( $ids == "("? $_REQUEST["value$counter"] : ",".$_REQUEST["value$counter"] ) ;
+                  //  $inputs .= "<input type='hidden'  name="."value$counter"." value='".$_REQUEST["value$counter"]."' >";
+                    $counter++;
+                }
+                $ids .= ")";
+
+                $query_subitem_value = 'SELECT subitem.name  AS subname, child.name, value.* FROM subitem INNER JOIN ( child INNER JOIN value ON child.id = value.child_id ) ON subitem.id = value.subitem_id WHERE value.child_id ='.$_REQUEST["id"].' AND value.id IN '.$ids;
+                $resul_subitem_value = mysqli_query($dbLink,$query_subitem_value);
+
+                if ( mysqli_num_rows($resul_subitem_value) != 0 ) {
+
+                    $value = mysqli_fetch_assoc($resul_subitem_value);
+                    echo"<div class='question' > 
+                             <p id='obg_main'>  Estamos prestes a <span id='obg'>apagar</span> da base de dados os dados abaixo do(a) <span id='obg'>".$value["name"]."</span> . <span id='obg'> Confirma que pretende apagar os mesmos? </span> </p>
+                             <ul>
+                                 <li class='warning_list'> subitem: ".$value["subname"]." - valor: ".$value["value"].";</li>";
+
+                    while($value = mysqli_fetch_assoc($resul_subitem_value)){
+
+                        echo "<li class='warning_list'> subitem: ".$value["subname"]." - valor: ".$value["value"].";</li>";
+
+                    }
+
+                    echo "   </ul>
+                             <br>
+                         </div>
+                         <form method='post' action=" . $current_page . '?estado=' . $_REQUEST["estado"] . '&tipo=' . $_REQUEST["tipo"] . '&id=' . $_REQUEST["id"] . ">
+                             <input type='hidden' name='ids' value='".$ids."'>
+                             <input type='hidden' name='update' value='true'>
+                             <button type='submit' class='continueButton'>Continuar</button>
+                             <a href='".get_site_url().'/gestao-de-registos'."' ><button type='button' class='continueButton'>Cancelar</button></a>    
+                         </form>";
+
+                } else {
+                    show_error_geral("gestao-de-registos","os valores não foram encontrados na base de dados.");
+                }
+
+            } else {
+
+                mysqli_begin_transaction($dbLink);
+                if(mysqli_query($dbLink, 'DELETE FROM value WHERE value.id IN'.$_REQUEST["ids"] ) )
+                    show_success_tipo("gestao-de-registos", $_REQUEST["estado"], "value","", $dbLink,"nos valores com o id que pertençe a ".$_REQUEST["ids"]);
+                else
+                    rollback($_REQUEST["estado"], $dbLink, "editar value com id's ".$_REQUEST["ids"]);
+
+            }
+
+
         } else {
             show_error_tipo();
         }
@@ -556,7 +784,7 @@ if( isset($_SESSION["dado_alterado_bool"]) && !$_SESSION["dado_alterado_bool"]  
     if( isset($_SESSION["dado_alterado_bool"]) && $_SESSION["dado_alterado_bool"] && isset($_REQUEST["estado"]) )
     {
         echo '<div class="unsuccess">
-                 <p id="obg_main" > A operação '.$_SESSION["dado_alterado"].' no  id <span id="obg"> '. $_SESSION["dado_alterado_last_id"].' </span> na  tabela <span id="obg"> '.$_SESSION["dado_alterado_last_tabela"].' já foi executada!</span>  </p>
+                 <p id="obg_main" > A operação '.$_SESSION["dado_alterado"].( $_REQUEST["tipo"]!="resgisto" ? ' no  id <span id="obg"> '. $_SESSION["dado_alterado_last_id"] : '' ) .'</span> na  tabela <span id="obg"> '.$_SESSION["dado_alterado_last_tabela"].' já foi executada!</span>  </p>
              </div> 
              <a href="'.$_SESSION["dado_alterado_page"].'"> <button class="continueButton" >Continuar</button> </a> ';
 
@@ -624,8 +852,8 @@ function show_success_tipo( $page,$categoria,$tabela,$id,$link,$mesage="no tuplo
 
 function show_error_geral($page,$message){
     $_SESSION["dado_alterado_page"]=get_site_url()."/$page";
-    echo "<div class='success'>
-            <p id='suc_main'> <span id='suc' > $message </span>. </p>
+    echo "<div class='unsuccess'>
+            <p id='obg_main'> <span id='obg' > $message </span>. </p>
           </div>
           <a href=".$_SESSION["dado_alterado_page"]."> <button class='continueButton' >Continuar</button> </a>";
 }
@@ -665,7 +893,7 @@ function rollback($categoria,$link,$message=""){
 function teste(){
     echo $_REQUEST["estado"]."<br>";
     echo $_REQUEST["tipo"]."<br>";
-    echo $_REQUEST["id"]."<br>";
+    echo ($_REQUEST["tipo"]=="resgisto"? "" : $_REQUEST["id"])."<br>";
 }
 
 ?>

@@ -1,9 +1,7 @@
 <?php
 require_once("custom/php/common.php");
 //gestao de itens
-echo "190 <br>";
 //check de capabilitie
-
 reset_edicao_dados();
 if( checkCapability("manage_items") ) {
 
