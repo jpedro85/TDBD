@@ -1,5 +1,6 @@
 <?php
 require_once("custom/php/common.php");
+reset_edicao_dados();
 if (checkCapability("manage_unit_types")) {
     if (!isset($_REQUEST['estado'])) {
         $myDB = connect();
@@ -42,7 +43,11 @@ if (checkCapability("manage_unit_types")) {
             } else {
                 echo "<td class=$cor>" . $subitem . '</td>';
             }
-            echo "<td class=$cor>[Apagar]</td></tr>";
+            echo '<td class="'.$cor.'">
+                    <a href="' . $edicao_de_dados_page . '?estado=editar&tipo=unidade&id=' . $row["id"] . '">[Editar]</a>
+                    <a href="' . $edicao_de_dados_page . '?estado=apagar&tipo=unidade&id=' . $row["id"] . '">[Apagar]</a>
+                    </td>
+                    </tr>';
         }
         echo '</tr>
             </tbody>
@@ -61,22 +66,21 @@ if (checkCapability("manage_unit_types")) {
             $name = $_REQUEST['nome'];
             $inserir = "INSERT INTO subitem_unit_type (name) VALUES ('$name')";
             mysqli_query($myDB, $inserir);
+            echo "<h3 class='form_input_title'>Gestão de unidades - inserção</h3>";
             echo "<div class='success'>";
             if ($inserir) {
-                echo "<h3 class='form_input_title'>Gestão de unidades - inserção</h3>";
                 echo "<p id='suc_main'>Foi submetido um valor</p>";
-                echo "<ul><a href=" . $current_page . ">Continuar</a></ul>";
             } else {
-                echo "<h3 class='form_input_title'>Gestão de unidades - inserção</h3>";
                 echo "<p id='suc_main'>nao foi submetido um valor</p>";
-                echo "<ul><a href=" . $current_page . ">Continuar</a></ul>";
+
             }
             echo "</div>";
+            echo "<a href=" . $current_page . "><button class='continueButton'>Continuar</button></a>";
         } else {
             echo "<br>
           <div class='unsuccess'>
           <p id='obg_main'><span id='obg'>Todos os campos teem de ser preenchidos</span></p>
-          <ul><a href=" . $current_page . ">Continuar</a></ul>
+          <a href=" . $current_page . "><button class='continueButton'>Continuar</button></a>
           </div>";
         }
     } else {
