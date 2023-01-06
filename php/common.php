@@ -37,6 +37,10 @@ function voltar_atras(){
 
 }
 
+function voltar_atraz(){
+    echo "<button type='button' class='continueButton' onClick='history.back();'>Voltar</button>";
+}
+
 function reset_my_session() {
     if (session_status() != PHP_SESSION_NONE) {
         session_destroy();
