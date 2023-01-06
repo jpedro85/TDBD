@@ -1,5 +1,6 @@
 <?php
 require_once("custom/php/common.php");
+reset_edicao_dados();
 if (checkCapability("insert_values")) {
     $myDB = connect();
     if (!mysqli_select_db($myDB, "bitnami_wordpress")) {//verifica conecao com a base de dados
@@ -316,7 +317,7 @@ if (checkCapability("insert_values")) {
                 echo "<div class='success'><p id='suc_main'>A Validacao<span id='suc'> foi</span> concluida <span id='suc'></span> com <span id='suc'>Sucesso:</span></p>";
                 echo $listcorreta;
                 echo "</ul><br></div><br>";
-                echo "<div class='question'><p class='obg_main'>deseja continuar?</p></div>";
+                echo "<div class='question'> <p id='obg_main'>deseja continuar?</p> </div>";
                 echo "<button type='submit' class='continueButton'>Submeter</button>";
             }
             echo "</form>";

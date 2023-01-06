@@ -1,6 +1,6 @@
 <?php
 require_once("custom/php/common.php");
-echo "69<br>";
+//echo "69<br>";
 //verificações dos campos
 //estados = {"editar","ativar","desativar","apagar"}
 //tipos = {"subitem","item","valor_permitido","unidade","resgisto"}
