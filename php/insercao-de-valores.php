@@ -2,9 +2,9 @@
 require_once("custom/php/common.php");
 if (checkCapability("insert_values")) {
     $myDB = connect();
-    if (!mysqli_select_db($myDB, "bitnami_wordpress")) {//verifica conecao
+    if (!mysqli_select_db($myDB, "bitnami_wordpress")) {//verifica conecao com a base de dados
         die("Connection failed:" . mysqli_connect_error());
-    } else {//conecao feita
+    } else {//conecao feita com a base de dados
         if (!isset($_REQUEST['estado'])) {//nenhum estado inserido
             echo "<h3 class='form_input_title'>Inserção de valores - criança - procurar</h3>";
             echo "<form method='post' action=" . $current_page . ">
@@ -21,7 +21,12 @@ if (checkCapability("insert_values")) {
             if (!empty($nome)) {//tem nome preenchido
                 $query1 = 'SELECT child.name,child.birth_date,child.id FROM child WHERE child.name like "%' . $nome . '%"';
                 if (!empty($data)) {// nome e data preenchido
-                    $query1 .= '&& child.birth_date LIKE "%' . $data . '%"';
+                    if (validateDate($data)) {
+                        $query1 .= '&& child.birth_date LIKE "%' . $data . '%"';
+                    } else {
+                        echo "<div class='unsuccess'><p id='obg_main'><span id='obg'>A Data Não foi inserira de forma correta</span></p></div><br>";
+                        echo "<p><strong>Foi procurado apenas pelos nomes</strong></p>";
+                    }
                 }
                 $result1 = mysqli_query($myDB, $query1);
                 if (mysqli_num_rows($result1) > 0) {
@@ -29,22 +34,28 @@ if (checkCapability("insert_values")) {
                         echo "<li><a href='insercao-de-valores?estado=escolher_item&crianca=" . $show['id'] . "'>[" . $show["name"] . "] (" . $show["birth_date"] . ")</a>";
                     }
                 } else {
-                    echo "<p id='obg_main'><span id='obg'>Não foi encontrada nenhuma crianca com essas características</span></p>";
-                    voltar_atras();
+                    echo "<div class='unsuccess'><p id='obg_main'><span id='obg'>Não foi encontrada nenhuma crianca com essas características</span></p></div>";
                 }
+                echo "<br>";
+                voltar_atras();
             } else if (!empty($data) && empty($name)) {//data e nao tem nome preenchido
-                $query1 = 'SELECT child.name,child.birth_date,child.id FROM child WHERE child.birth_date like "%' . $data . '%"';
-                $result1 = mysqli_query($myDB, $query1);
-                if (mysqli_num_rows($result1) > 0) {
-                    while ($show = mysqli_fetch_assoc(($result1))) {
-                        echo "<li><a href='insercao-de-valores?estado=escolher_item&crianca=" . $show['id'] . "'>[" . $show["name"] . "] (" . $show["birth_date"] . ")</a>";
+                if (validateDate($data)) {
+                    $query1 = 'SELECT child.name,child.birth_date,child.id FROM child WHERE child.birth_date like "%' . $data . '%"';
+                    $result1 = mysqli_query($myDB, $query1);
+                    if (mysqli_num_rows($result1) > 0) {
+                        while ($show = mysqli_fetch_assoc(($result1))) {
+                            echo "<li><a href='insercao-de-valores?estado=escolher_item&crianca=" . $show['id'] . "'>[" . $show["name"] . "] (" . $show["birth_date"] . ")</a>";
+                        }
+                    } else {
+                        echo "<div class='unsuccess'><p id='obg_main'><span id='obg'>Não foi encontrada nenhuma crianca com essas características</span></p></div>";
                     }
                 } else {
-                    echo "<p id='obg_main'><span id='obg'>Não foi encontrada nenhuma crianca com essas características</span></p>";
-                    voltar_atras();
+                    echo "<div class='unsuccess'><p id='obg_main'><span id='obg'>A Data Não foi inserira de forma correta</span></p></div>";
                 }
+                echo "<br>";
+                voltar_atras();
             } else {
-                echo "<p id='obg_main'><span id='obg'>Não foi encontrada nenhuma crianca com essas características</span></p>";
+                echo "<div class='unsuccess'><p id='obg_main'><span id='obg'>Não foi inserido nenhum valor</span></p></div>";
                 voltar_atras();
             }
         } else if (isset($_REQUEST['estado']) && $_REQUEST['estado'] == 'escolher_item') {//segundo estado de escolher o item
@@ -91,7 +102,6 @@ if (checkCapability("insert_values")) {
                     case "text":
                         echo "<h3 class='form_input_title'>" . $subItem["name"] . ($obrigatorio == 1 ? "*</h3>" : "</h3>");
                         if ($subItem["form_field_type"] == "text") {//text text
-                            echo "<h3>texto</h3>";
                             if ($addUnidades) {
                                 $query5 = "SELECT name from subitem_unit_type WHERE id=" . $subItem["unit_type_id"];
                                 $unidades = mysqli_fetch_assoc(mysqli_query($myDB, $query5));
@@ -182,7 +192,6 @@ if (checkCapability("insert_values")) {
                                 $contador++;
                             } elseif ($subItem["form_field_type"] == "checkbox") {//enum checkbox
                                 $contador2 = 0;
-
                                 while ($valor = mysqli_fetch_assoc($result3)) {
                                     $nomedocampov2 = $nomedocampo . "_" . $contador2;
                                     echo "<input type='checkbox' name='$nomedocampov2' value='" . $valor["value"] . "'>";
@@ -193,7 +202,7 @@ if (checkCapability("insert_values")) {
                                 echo "<input type='hidden' name='$nomedocampomandatorio' value='" . ($obrigatorio == 1) . "'>";
                                 echo "<input type='hidden' name='$campoid' value='" . $subItem["id"] . "'>";
                                 echo "<input type='hidden' name='$campoid" . "Nome" . "' value='" . $subItem["name"] . "'>";
-                                echo "<input type='hidden' name='$campoid" . "Numero" . "' value='$contador2'>";//
+                                echo "<input type='hidden' name='$campoid" . "Numero" . "' value='$contador2'>";
                                 $contador++;
                             } else {//enum radio
                                 $id = 0;
@@ -277,7 +286,7 @@ if (checkCapability("insert_values")) {
                                 if (isset($_REQUEST[$nomedocampo . "_" . $contador2])) {
                                     $selecionado = true;
                                     $listcorreta .= "<li class='warning_list'>" . $_REQUEST["campo$contador" . "idNome"] . ":" . $_REQUEST[$nomedocampo . "_" . $contador2] . "</li>";
-                                    echo "<input type='hidden' name='$nomedocampo' value='" . $_REQUEST[$nomedocampo . "_" . $contador2] . "'>";
+                                    echo "<input type='hidden' name='".$nomedocampo . "_" . $contador2."' value='" . $_REQUEST[$nomedocampo . "_" . $contador2] . "'>";
                                 }
                             }
                             if (!$selecionado) {
@@ -290,7 +299,7 @@ if (checkCapability("insert_values")) {
                         if ($_REQUEST[$nomedocampomandatorio] == 1 && !isset($_REQUEST[$nomedocampo])) {//radioenum
                             $valido = false;
                             $list .= "<li class='warning_list'>" . $_REQUEST["campo$contador" . "idNome"] . "</li>";
-                        } else {
+                        } else if (isset($_REQUEST[$nomedocampo])) {
                             $listcorreta .= "<li class='warning_list'>" . $_REQUEST["campo$contador" . "idNome"] . ":" . $_REQUEST[$nomedocampo] . "</li>";
                             echo "<input type='hidden' name='$nomedocampo' value='" . $_REQUEST[$nomedocampo] . "'>";
                         }
@@ -317,12 +326,24 @@ if (checkCapability("insert_values")) {
             $queryErrors = false;
             while (isset($_REQUEST["campo$contador" . "id"])) {
                 $nomedocampo = "campo" . $contador;
-                $query = 'INSERT INTO `value` (child_id,subitem_id,value,date,time,producer) VALUES (' . $_SESSION['child_id'] . ',' . $_REQUEST["campo$contador" . "id"] . ',"' . $_REQUEST[$nomedocampo] . '","' . date("Y-m-d") . '","' . date("H:i:s") . '", "' . WP_get_current_user()->user_login . '")';
-                if (!mysqli_query($myDB, $query)) {
-                    echo '<div class="unsuccess warnings"><span>Erro: ' . $query . '<br>' . mysqli_error($myDB) . '</span></div>';
-                    $queryErrors = true;
+                if(isset($_REQUEST["campo$contador"."tipo"])&& $_REQUEST["campo$contador"."tipo"]=="checkbox"){
+                    $contador3=0;
+                    while(isset($_REQUEST["campo$contador"."_".$contador3])){
+                        $query = 'INSERT INTO `value` (child_id,subitem_id,value,date,time,producer) VALUES (' . $_SESSION['child_id'] . ',' . $_REQUEST["campo$contador" . "id"] . ',"' . $_REQUEST["campo$contador"."_".$contador3] . '","' . date("Y-m-d") . '","' . date("H:i:s") . '", "' . WP_get_current_user()->user_login . '")';
+                        if (!mysqli_query($myDB, $query)) {
+                            echo '<div class="unsuccess warnings"><span>Erro: ' . $query . '<br>' . mysqli_error($myDB) . '</span></div>';
+                            $queryErrors = true;
+                        }
+                        $contador3++;
+                    }
+                }else{
+                    $query = 'INSERT INTO `value` (child_id,subitem_id,value,date,time,producer) VALUES (' . $_SESSION['child_id'] . ',' . $_REQUEST["campo$contador" . "id"] . ',"' . $_REQUEST[$nomedocampo] . '","' . date("Y-m-d") . '","' . date("H:i:s") . '", "' . WP_get_current_user()->user_login . '")';
+                    if (!mysqli_query($myDB, $query)) {
+                        echo '<div class="unsuccess warnings"><span>Erro: ' . $query . '<br>' . mysqli_error($myDB) . '</span></div>';
+                        $queryErrors = true;
+                    }
                 }
-                $contador++;
+            $contador++;
             }
             if (!$queryErrors) {
                 echo "<div class='success'><p id='suc_main'>Inseriu os dados de registo com sucesso.<br>Clique em <span id='suc'>Continuar</span> para avançar.</p></div>
